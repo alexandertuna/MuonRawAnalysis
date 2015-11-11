@@ -59,7 +59,7 @@ int MuonRawHistograms::initialize(){
     // tree->SetBranchAddress("mdt_chamber_eta_station", &mdt_chamber_eta_station);
     // tree->SetBranchAddress("mdt_chamber_phi_sector",  &mdt_chamber_phi_sector);
 
-    tree->SetBranchAddress("mdt_chamber_tube_n".c_str(),      &mdt_chamber_tube_n);
+    tree->SetBranchAddress("mdt_chamber_tube_n",      &mdt_chamber_tube_n);
     // tree->SetBranchAddress("mdt_chamber_tube_r",      &mdt_chamber_tube_r);
     // tree->SetBranchAddress("mdt_chamber_tube_adc",    &mdt_chamber_tube_adc);
 
