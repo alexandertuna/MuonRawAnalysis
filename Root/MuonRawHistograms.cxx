@@ -10,19 +10,14 @@
 #include <TH1F.h>
 #include <TH2F.h>
 
-MuonRawHistograms::MuonRawHistograms(){
-    
-    int x = 1;
-    std::cout << " FUUUUCK " << x << std::endl;
-
+MuonRawHistograms::MuonRawHistograms(std::string ipath, std::string opath){
+    input_path  = ipath;
+    output_path = opath;
 }
 
 MuonRawHistograms::~MuonRawHistograms(){}
 
-int MuonRawHistograms::initialize(std::string ipath, std::string opath){
-
-    input_path  = ipath;
-    output_path = opath;
+int MuonRawHistograms::initialize(){
 
     file = TFile::Open(input_path.c_str());
     if (!file)
@@ -39,7 +34,7 @@ int MuonRawHistograms::initialize(std::string ipath, std::string opath){
     return 0;
 }
 
-int MuonRawHistograms::execute(){
+int MuonRawHistograms::execute(int ents){
 
     int ent = 0;
     int ch  = 0;
@@ -66,8 +61,11 @@ int MuonRawHistograms::execute(){
     int         chamber_eta  = 0;
     int         chamber_hits = 0;
     
-    // int entries = 10000;
-    int entries = (int)(tree->GetEntries());
+    int tree_entries = (int)(tree->GetEntries());
+    if (ents < 0 || ents > tree_entries)
+        entries = tree_entries;
+    else
+        entries = ents;
 
     time_start = std::chrono::system_clock::now();
 
@@ -254,7 +252,7 @@ void MuonRawHistograms::initialize_histograms(){
     run = "00"+run;
 
     int xbins = 0; float xlo = 0; float xhi = 0;
-    int ybins = 0; float ylo = 0; float yhi = 0;
+    int ybins = 0; float ylo = 0;
 
     evts = new TH1F(("evts_"+run).c_str(), "", 1, 0, 2);
     

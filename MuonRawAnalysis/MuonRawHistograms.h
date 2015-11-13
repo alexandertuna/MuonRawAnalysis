@@ -16,10 +16,11 @@ class MuonRawHistograms {
  public:
 
     MuonRawHistograms();
+    MuonRawHistograms(std::string ipath, std::string opath);
     ~MuonRawHistograms();
 
-    int initialize(std::string ipath, std::string opath);
-    int execute();
+    int initialize();
+    int execute(int ents = -1);
     int finalize();
 
     std::string  input_path = "";
@@ -31,6 +32,7 @@ class MuonRawHistograms {
 
     TFile* file;
     TTree* tree;
+    int entries;
 
     int RunNumber; 
     int EventNumber;
