@@ -115,11 +115,11 @@ int MuonRawHistograms::execute(int ents){
 
             if (chamber_type=="EIL" && (chamber_eta==1 || chamber_eta==2)) 
                 for (hit = 0; hit < chamber_hits; ++hit)
-                    hits_vs_r_L->Fill((mdt_chamber_tube_r->at(ch)).at(hit), 1);
+                    hits_vs_r_L->Fill((mdt_chamber_tube_r->at(ch)).at(hit), prescale_HLT);
 
             if (chamber_type=="EIS" && (chamber_eta==1 || chamber_eta==2))
                 for (hit = 0; hit < chamber_hits; ++hit)
-                    hits_vs_r_S->Fill((mdt_chamber_tube_r->at(ch)).at(hit), 1);
+                    hits_vs_r_S->Fill((mdt_chamber_tube_r->at(ch)).at(hit), prescale_HLT);
         }
         
         for (ch = 0; ch < csc_chamber_n; ++ch){
@@ -133,11 +133,11 @@ int MuonRawHistograms::execute(int ents){
 
             if (chamber_type=="CSL")
                 for (hit = 0; hit < chamber_hits; ++hit)
-                    hits_vs_r_L->Fill((csc_chamber_cluster_r->at(ch)).at(hit), 1);
+                    hits_vs_r_L->Fill((csc_chamber_cluster_r->at(ch)).at(hit), prescale_HLT);
 
             if (chamber_type=="CSS")
                 for (hit = 0; hit < chamber_hits; ++hit)
-                    hits_vs_r_S->Fill((csc_chamber_cluster_r->at(ch)).at(hit), 1);
+                    hits_vs_r_S->Fill((csc_chamber_cluster_r->at(ch)).at(hit), prescale_HLT);
         }
         
         evts->Fill(                                          1, prescale_HLT);
