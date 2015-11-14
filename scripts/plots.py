@@ -19,6 +19,7 @@ warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 import ROOT
 import rootlogon
 ROOT.gROOT.SetBatch(True)
+ROOT.gStyle.SetPadBottomMargin(0.12)
 
 livetime_csc = 140e-9
 livetime_mdt = 1300e-9
@@ -31,26 +32,24 @@ def options():
 def main():
     
     runs = [
-        # 278880,
-        # 279169,
-        # 279345,
-        # 279685,
-        # 280464,
-        # 280673,
-        280862,
-        # 281074,
-        281143,
-        # 281381,
-        # 281385,
-        281411,
-        282992,
-        283429,
-        283780,
-        284213,
-        284285,
+        # "00278880",
+        # "00279169",
+        # "00279345",
+        # "00279685",
+        # "00280464",
+        # "00280673",
+        "00280862",
+        # "00281074",
+        "00281143",
+        "00281411",
+        "00282992",
+        "00283429",
+        "00283780",
+        "00284213",
+        "00284285",
         ]
     
-    for perbc in [True, False]:
+    for perbc in [False]:
         plots_vs_lumi(runs, perbc, rate=True)
 
     plots_vs_r(runs)
@@ -76,28 +75,24 @@ def plots_vs_lumi(runs, perbc, rate):
     hists  = {}
     graphs = {}
     funcs  = {}
-    template = "%s_vs_lumi_orbit_%s"
+    template = "hits_vs_lumi_vs_evts_%s_%s"
     if perbc:
-        template = template.replace("_lumi_orbit_", "_lumi_bunch_")
+        template = template
 
     rangex = (0.2, 4.8) if not perbc else (1.2, 2.7)
     rangex = (2.0, 5.4) if not perbc else (1.2, 2.7)
     ndiv = 505
 
-    for region in ["mdt_all",
+    for region in ["mdt_full",
                    "mdt_EIL1",
                    "mdt_EIS1",
-                   #"mdt_EIL2",
-                   #"mdt_EIS2",
-                   #"mdt_EIL3",
-                   #"mdt_EIS3",
-                   #"csc_all",
-                   "csc_L",
-                   "csc_S",
+                   "csc_CSL1",
+                   "csc_CSS1",
                    ]:
 
         # for 2D plots
         ROOT.gStyle.SetPadRightMargin(0.18)
+        ROOT.gStyle.SetPadBottomMargin(0.12)
 
         for run in runs:
 
@@ -108,9 +103,10 @@ def plots_vs_lumi(runs, perbc, rate):
 
             hists[name] = input.Get(name)
             if not hists[name]:
-                continue
+                fatal("Cannot retrieve %s" % (name))
             yaxis = hists[name].GetYaxis()
-            yaxis.SetTitle(ytitle(region))
+            hists[name].GetXaxis().SetTitle(xtitle(name))
+            hists[name].GetYaxis().SetTitle(ytitle(name))
             # hists[name].Rebin2D(2, 2)
             hists[name].GetXaxis().SetRangeUser(*rangex)
             hists[name].GetXaxis().SetNdivisions(ndiv)
@@ -124,16 +120,15 @@ def plots_vs_lumi(runs, perbc, rate):
                 livetime = livetime_csc if "csc" in region else livetime_mdt
                 areas = chamber_area()
                 area = -1
-                if region == "mdt_all" : area = sum([areas[cham] for cham in filter(lambda key: not "CS" in key, areas)])
+                if region == "mdt_full": area = sum([areas[cham] for cham in filter(lambda key: not "CS" in key, areas)])
                 if region == "mdt_EIL1": area = sum([areas[cham] for cham in filter(lambda key:   "EIL1" in key, areas)])
                 if region == "mdt_EIL2": area = sum([areas[cham] for cham in filter(lambda key:   "EIL2" in key, areas)])
                 if region == "mdt_EIS1": area = sum([areas[cham] for cham in filter(lambda key:   "EIS1" in key, areas)])
                 if region == "mdt_EIS2": area = sum([areas[cham] for cham in filter(lambda key:   "EIS2" in key, areas)])
-                if region == "csc_L"   : area = sum([areas[cham] for cham in filter(lambda key:   "CSL1" in key, areas)])
-                if region == "csc_S"   : area = sum([areas[cham] for cham in filter(lambda key:   "CSS1" in key, areas)])
+                if region == "csc_CSL1": area = sum([areas[cham] for cham in filter(lambda key:   "CSL1" in key, areas)])
+                if region == "csc_CSS1": area = sum([areas[cham] for cham in filter(lambda key:   "CSS1" in key, areas)])
                 hists[pfx].Scale(1.0 / (livetime * area))
                 
-            hists[pfx].GetYaxis().SetTitle("< %s >" % (ytitle(region)))
             hists[pfx].SetLineColor(ROOT.kBlack)
             hists[pfx].SetLineWidth(3)
             hists[pfx].GetXaxis().SetRangeUser(*rangex)
@@ -156,6 +151,7 @@ def plots_vs_lumi(runs, perbc, rate):
 
         # for 1D plots
         ROOT.gStyle.SetPadRightMargin(0.06)
+        ROOT.gStyle.SetPadBottomMargin(0.12)
 
         name = template % (region, "overlay")
         canvas = ROOT.TCanvas(name, name, 800, 800)
@@ -170,16 +166,22 @@ def plots_vs_lumi(runs, perbc, rate):
             name = (template % (region, run)) + "_pfx"
             hists[name].GetXaxis().SetRangeUser(*rangex)
             hists[name].GetXaxis().SetNdivisions(ndiv)
-            if perbc:
-                hists[name].GetXaxis().SetTitle(hists[name].GetXaxis().GetTitle().replace("lumi.", "lumi. per BC"))
-            if rate:
-                hists[name].GetYaxis().SetTitle("hit rate [ cm^{-2} s^{-1} ]")
+
+            hists[name].GetXaxis().SetTitle(xtitle(name))
+            hists[name].GetYaxis().SetTitle(ytitle(name if not rate else name.replace("hits_", "rate_")))
+
             hists[name].SetMinimum(ymin(region))
             hists[name].SetMaximum(ymax(region, rate))
             hists[name].SetLineColor(color(run))
             hists[name].SetMarkerColor(color(run))
             hists[name].SetMarkerStyle(20)
             hists[name].SetMarkerSize(0.8)
+
+            hists[name].GetXaxis().SetTitleSize(0.05)
+            hists[name].GetYaxis().SetTitleSize(0.05)
+            hists[name].GetXaxis().SetLabelSize(0.05)
+            hists[name].GetYaxis().SetLabelSize(0.05)
+
             # hists[name].SetLineColor(0)
 
             if graphical:
@@ -277,12 +279,12 @@ def plots_vs_r(runs):
     # hits vs r
     for run in runs:
 
-        name = "entries_%s" % (run)
+        name = "evts_%s" % (run)
         entries = input.Get(name).GetBinContent(1)
 
         for sector in ["L", "S"]:
 
-            name = "endcap_%s_hits_%s" % (sector, run)
+            name = "hits_vs_r_%s_%s" % (sector, run)
             hists[name] = input.Get(name)
             hists[name].Rebin(rebin)
             style_vs_r(hists[name])
@@ -290,7 +292,7 @@ def plots_vs_r(runs):
                 hists[name].SetBinError(bin, 0)
             draw_vs_r(hists[name], ops.output)
 
-            numer = copy.copy(hists["endcap_%s_hits_%s" % (sector, run)])
+            numer = copy.copy(hists[name])
             denom = copy.copy(area_L if sector=="L" else area_S)
 
             for bin in xrange(0, denom.GetNbinsX()+1):
@@ -299,11 +301,11 @@ def plots_vs_r(runs):
                 livetime = livetime_csc if radius < boundary else livetime_mdt
                 denom.SetBinContent(bin, entries * area * livetime)
 
-            name = numer.GetName().replace("_hits_", "_rate_")
-            ratio = copy.copy(hists["endcap_%s_hits_%s" % (sector, run)])
+            ratio = copy.copy(hists[name])
             ratio.Reset()
-
             ratio.Divide(numer, denom)
+
+            name = numer.GetName().replace("hits_", "rate_")
             ratio.SetName(name)
             style_vs_r(ratio)
             ratio.GetYaxis().SetTitle(ratio.GetYaxis().GetTitle().replace("hits", "hit rate [ cm^{-2} s^{-1} ]"))
@@ -347,16 +349,15 @@ def plots_vs_bcid(runs):
     # hits vs bcid
     for run in runs:
 
-        entries         = input.Get("entries_%s" % (run)).GetBinContent(1)
-        entries_vs_bcid = input.Get("entries_vs_bcid_%s" % (run))
-        actlumi_vs_bcid = input.Get("actlumi_vs_bcid_%s" % (run))
-        avglumi_vs_bcid = input.Get("avglumi_vs_bcid_%s" % (run))
+        entries         = input.Get("evts_%s" % (run)).GetBinContent(1)
+        entries_vs_bcid = input.Get("evts_vs_bcid_%s" % (run))
+        actlumi_vs_bcid = input.Get("lumi_vs_bcid_%s" % (run))
+        avglumi_vs_bcid = input.Get("lumi_vs_bcid_%s" % (run))
 
         actlumi_vs_bcid.GetYaxis().SetTitle("< inst. lumi. > per BCID per event [ e^{30} ]")
         avglumi_vs_bcid.GetYaxis().SetTitle("< inst. lumi. > per event [ e^{33} ]")
 
         for hist in [actlumi_vs_bcid, 
-                     avglumi_vs_bcid,
                      ]:
 
             hist.Divide(hist, entries_vs_bcid)
@@ -374,14 +375,14 @@ def plots_vs_bcid(runs):
             draw_logos(xcoord=0.35, ycoord=0.85, run=run, fit=False)
             canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
 
-        for det in ["mdt", "csc"]:
+        for det in ["mdt_full", "csc_full"]:
 
-            name = "%s_all_vs_bcid_%s" % (det, run)
+            name = "hits_vs_bcid_%s_%s" % (det, run)
             hists[name] = input.Get(name)
-            hists[name].GetYaxis().SetTitle("< hits in %s > per event" % (det.upper()))
+            hists[name].GetYaxis().SetTitle("< hits in %s > per event" % (det.split("_")[0].upper()))
             if per_event:
                 hists[name].Divide(hists[name], entries_vs_bcid)
-            setmax=4300 if det=="mdt" else 60
+            setmax=4300 if "mdt" in det else 60
             style_vs_bcid(hists[name], per_event, setmax=setmax)
 
             canvas = ROOT.TCanvas(name, name, 1600, 500)
@@ -397,6 +398,14 @@ def style_vs_r(hist, ndiv=505):
     hist.SetMarkerSize(0.9)
     hist.GetXaxis().SetNdivisions(ndiv)
     hist.GetXaxis().SetRangeUser(700, 4700)
+    hist.GetXaxis().SetTitle(xtitle(name))
+    hist.GetYaxis().SetTitle(ytitle(name))
+    hist.GetXaxis().SetTitleSize(0.05)
+    hist.GetYaxis().SetTitleSize(0.05)
+    hist.GetXaxis().SetLabelSize(0.05)
+    hist.GetYaxis().SetLabelSize(0.05)
+    hist.GetXaxis().SetTitleOffset(1.2)
+    hist.GetYaxis().SetTitleOffset(1.6)
 
 def draw_vs_r(hist, output, height=800, width=800, drawopt="psame", logos=False):
     name = hist.GetName()
@@ -418,7 +427,13 @@ def style_vs_bcid(hist, per_event, ndiv=505, setmax=False):
     if "mdt"  in name: hist.SetFillColor(ROOT.kRed)
     if "csc"  in name: hist.SetFillColor(ROOT.kAzure+1)
     hist.GetXaxis().SetNdivisions(ndiv)
+    hist.GetXaxis().SetTitle(xtitle(name))
+    hist.GetYaxis().SetTitle(ytitle(name))
     hist.GetYaxis().SetTitleOffset(0.65)
+    hist.GetXaxis().SetTitleSize(0.05)
+    hist.GetYaxis().SetTitleSize(0.05)
+    hist.GetXaxis().SetLabelSize(0.05)
+    hist.GetYaxis().SetLabelSize(0.05)
     if per_event and setmax:
         hist.SetMaximum(setmax)
 
@@ -446,90 +461,123 @@ def draw_logos(xcoord=0.5, ycoord=0.5, run=None, fit=True):
 
 def color(run):
 
-    if run == 280862: return ROOT.kGray+2
-    if run == 281143: return ROOT.kOrange-3
-    if run == 281411: return ROOT.kRed
-    if run == 282992: return ROOT.kMagenta
-    if run == 283429: return ROOT.kViolet-5
-    if run == 283780: return ROOT.kBlue
-    if run == 284213: return ROOT.kAzure+1
-    if run == 284285: return 210
+    if run == "00280862": return ROOT.kGray+2
+    if run == "00281143": return ROOT.kOrange-3
+    if run == "00281411": return ROOT.kRed
+    if run == "00282992": return ROOT.kMagenta
+    if run == "00283429": return ROOT.kViolet-5
+    if run == "00283780": return ROOT.kBlue
+    if run == "00284213": return ROOT.kAzure+1
+    if run == "00284285": return 210
 
-    if run == 278880: return ROOT.kBlack
-    if run == 279169: return ROOT.kGray
-    if run == 279345: return ROOT.kGreen+3
-    if run == 279685: return ROOT.kOrange+7
-    if run == 280464: return ROOT.kBlack
-    if run == 280614: return ROOT.kBlack
-    if run == 280673: return ROOT.kRed
-    if run == 280862: return 210
-    if run == 281074: return ROOT.kBlue
-    if run == 281143: return ROOT.kOrange+7
-    if run == 281381: return ROOT.kViolet-5
-    if run == 281385: return ROOT.kOrange-7
-    if run == 281411: return ROOT.kOrange-3
-    if run == 282992: return ROOT.kRed+3
-    if run == 283429: return ROOT.kRed
-    if run == 283780: return ROOT.kBlue
-    if run == 284213: return ROOT.kBlack
-    if run == 284285: return ROOT.kBlack
+    if run == "00278880": return ROOT.kBlack
+    if run == "00279169": return ROOT.kGray
+    if run == "00279345": return ROOT.kGreen+3
+    if run == "00279685": return ROOT.kOrange+7
+    if run == "00280464": return ROOT.kBlack
+    if run == "00280614": return ROOT.kBlack
+    if run == "00280673": return ROOT.kRed
+    if run == "00280862": return 210
+    if run == "00281074": return ROOT.kBlue
+    if run == "00281143": return ROOT.kOrange+7
+    if run == "00281381": return ROOT.kViolet-5
+    if run == "00281385": return ROOT.kOrange-7
+    if run == "00281411": return ROOT.kOrange-3
+    if run == "00282992": return ROOT.kRed+3
+    if run == "00283429": return ROOT.kRed
+    if run == "00283780": return ROOT.kBlue
+    if run == "00284213": return ROOT.kBlack
+    if run == "00284285": return ROOT.kBlack
 
 def ymax(region, rate=False):
-    if region == "mdt_all":  return 6100 if not rate else   30
+    if region == "mdt_full": return 6100 if not rate else   30
     if region == "mdt_EIL1": return  550 if not rate else  200
     if region == "mdt_EIS1": return  380 if not rate else  200
     if region == "mdt_EIL2": return  180
     if region == "mdt_EIS2": return   90
     if region == "mdt_EIL3": return  100
     if region == "mdt_EIS3": return  100
-    if region == "csc_all":  return  100
-    if region == "csc_L":    return   50 if not rate else 1000
-    if region == "csc_S":    return   40 if not rate else 1000
+    if region == "csc_full": return  100
+    if region == "csc_CSL1": return   50 if not rate else 1000
+    if region == "csc_CSS1": return   40 if not rate else 1000
     fatal("no ymax for %s" % (region))
     
 def ymin(region):
-    if region == "mdt_all":  return    0 # 1500
-    if region == "mdt_EIL1": return    0 # 130
-    if region == "mdt_EIL2": return   70
-    if region == "mdt_EIL3": return   20
-    if region == "mdt_EIS1": return    0 # 90
-    if region == "mdt_EIS2": return   40
-    if region == "mdt_EIS3": return   20
-    if region == "csc_all":  return    0
-    if region == "csc_L":    return    0
-    if region == "csc_S":    return    0
+    if region == "mdt_full": return 0
+    if region == "mdt_EIL1": return 0
+    if region == "mdt_EIL2": return 0
+    if region == "mdt_EIL3": return 0
+    if region == "mdt_EIS1": return 0
+    if region == "mdt_EIS2": return 0
+    if region == "mdt_EIS3": return 0
+    if region == "csc_full": return 0
+    if region == "csc_CSL1": return 0
+    if region == "csc_CSS1": return 0
     fatal("no ymin for %s" % (region))
 
-def ytitle(region):
-    # mdt_all
-    detector, subset = region.split("_")
-    detector = detector.upper()
-    return "%s hits: %s" % (detector, subset)
+def xtitle(name):
+    if "_vs_bcid" in name: return "BCID"
+    if "_vs_r"    in name: return "radius [mm]"
+    if "_vs_lumi" in name: return "< inst. lumi. > [e^{33}_cm^{-2}_s^{-1}_]".replace("_", "#scale[0.5]{ }")
+    
+    if "endcap"   in name: return xtitle("_vs_r")
 
+    return "fuck"
+
+def ytitle(name):
+    if "hits_vs_lumi" in name or "hits_vs_bcid" in name:
+        if "mdt_full" in name: return      "< MDT hits per event >"
+        if "mdt_EIL1" in name: return "< MDT EIL1 hits per event >"
+        if "mdt_EIL2" in name: return "< MDT EIL2 hits per event >"
+        if "mdt_EIS1" in name: return "< MDT EIS1 hits per event >"
+        if "mdt_EIS2" in name: return "< MDT EIS2 hits per event >"
+        if "csc_full" in name: return      "< CSC hits per event >"
+        if "csc_CSL1" in name: return    "< CSC L hits per event >"
+        if "csc_CSS1" in name: return    "< CSC S hits per event >"
+    if "rate_vs_lumi" in name:
+        unit = "[Hz / cm^{2}]"
+        if "mdt_full" in name: return      "MDT hit rate %s" % (unit)
+        if "mdt_EIL1" in name: return "MDT EIL1 hit rate %s" % (unit)
+        if "mdt_EIL2" in name: return "MDT EIL2 hit rate %s" % (unit)
+        if "mdt_EIS1" in name: return "MDT EIS1 hit rate %s" % (unit)
+        if "mdt_EIS2" in name: return "MDT EIS2 hit rate %s" % (unit)
+        if "csc_full" in name: return      "CSC hit rate %s" % (unit)
+        if "csc_CSL1" in name: return    "CSC L hit rate %s" % (unit)
+        if "csc_CSS1" in name: return    "CSC S hit rate %s" % (unit)
+
+    if "lumi_vs_bcid" in name: return "< inst. lumi. > [e^{30}_cm^{-2}_s^{-1}_]".replace("_", "#scale[0.5]{ }")
+    if "hits_vs_r"    in name: return "< hits per event >"
+    if "rate_vs_r"    in name: return "hit rate [Hz / cm^{2}]"
+
+    if name == "endcap_L_area": return "L area [cm^{2}]"
+    if name == "endcap_S_area": return "S area [cm^{2}]"
+
+    return "fuck"
+            
 def caption(run):
-    return "%s, %s bunches" % (run, bunches(run))
+    return "%s, %s bunches" % (int(run), bunches(run))
 
 def bunches(run):
-    if run == 278880: return  447
-    if run == 279169: return  733
-    if run == 279345: return  877
-    if run == 279598: return 1021
-    if run == 279685: return 1021
-    if run == 280231: return 1165
-    if run == 280464: return 1309
-    if run == 280614: return 1309
-    if run == 280673: return 1453
-    if run == 280862: return 1453
-    if run == 281074: return 1596
-    if run == 281143: return 1596
-    if run == 281381: return 1813
-    if run == 281385: return 1813
-    if run == 281411: return 1813
-    if run == 282992: return 1813
-    if run == 283429: return 2029
-    if run == 283780: return 2232
-    if run == 284213: return 2232
-    if run == 284285: return 2232
+    if run == "00278880": return  447
+    if run == "00279169": return  733
+    if run == "00279345": return  877
+    if run == "00279598": return 1021
+    if run == "00279685": return 1021
+    if run == "00280231": return 1165
+    if run == "00280464": return 1309
+    if run == "00280614": return 1309
+    if run == "00280673": return 1453
+    if run == "00280862": return 1453
+    if run == "00281074": return 1596
+    if run == "00281143": return 1596
+    if run == "00281381": return 1813
+    if run == "00281385": return 1813
+    if run == "00281411": return 1813
+    if run == "00282992": return 1813
+    if run == "00283429": return 2029
+    if run == "00283780": return 2232
+    if run == "00284213": return 2232
+    if run == "00284285": return 2232
 
 def kill_weird_bins(hist):
     for bin in xrange(1, hist.GetNbinsX()):
@@ -561,6 +609,9 @@ def chamber_area():
             areas[chamber] = float(area) * mm2_to_cm2
             
     return areas
+
+def fatal(message):
+    sys.exit("Error in %s: %s" % (__file__, message))
 
 def colz():
     import array
