@@ -52,7 +52,9 @@ def main():
     for perbc in [False]:
         plots_vs_lumi(runs, perbc, rate=True)
 
-    plots_vs_r(runs)
+    for adc in [True, False]:
+        plots_vs_r(runs, adc)
+
     plots_vs_bcid(runs)
 
 def plots_vs_lumi(runs, perbc, rate):
@@ -249,7 +251,7 @@ def plots_vs_lumi(runs, perbc, rate):
         canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
 
 
-def plots_vs_r(runs):
+def plots_vs_r(runs, adc):
 
     ops = options()
     if not ops.output:
@@ -285,6 +287,8 @@ def plots_vs_r(runs):
         for sector in ["L", "S"]:
 
             name = "hits_vs_r_%s_%s" % (sector, run)
+            if adc:
+                name = name.replace("_r", "_r_adc")
             hists[name] = input.Get(name)
             hists[name].Rebin(rebin)
             style_vs_r(hists[name])
