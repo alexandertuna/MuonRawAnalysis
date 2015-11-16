@@ -111,8 +111,10 @@ class MuonRawHistograms {
     TH2F* hits_vs_lumi_vs_evts_csc_CSL1 = 0;
     TH2F* hits_vs_lumi_vs_evts_csc_CSS1 = 0;
 
-    TH1F* hits_vs_r_L = 0;
-    TH1F* hits_vs_r_S = 0;
+    TH1F* hits_vs_r_L     = 0;
+    TH1F* hits_vs_r_S     = 0;
+    TH1F* hits_vs_r_adc_L = 0;
+    TH1F* hits_vs_r_adc_S = 0;
 
     std::vector<TH1F*> histograms1D;
     std::vector<TH2F*> histograms2D;
