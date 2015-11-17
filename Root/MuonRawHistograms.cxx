@@ -59,8 +59,10 @@ int MuonRawHistograms::execute(int ents){
     int hits_csc_CSL1 = 0;
     int hits_csc_CSS1 = 0;
 
+    std::string chamber_side = "";
     std::string chamber_type = "";
     int         chamber_eta  = 0;
+    int         chamber_phi  = 0;
     int         chamber_hits = 0;
     
     int tree_entries = (int)(tree->GetEntries());
@@ -101,7 +103,9 @@ int MuonRawHistograms::execute(int ents){
 
             chamber_hits = mdt_chamber_tube_n->at(ch);
             chamber_eta  = mdt_chamber_eta_station->at(ch);
+            chamber_phi  = mdt_chamber_phi_sector->at(ch);
             chamber_type = mdt_chamber_type->at(ch);
+            chamber_side = mdt_chamber_side->at(ch);
 
             hits_mdt_full += chamber_hits;
             if (chamber_type=="EIL" && chamber_eta==1) hits_mdt_EIL1 += chamber_hits;
@@ -122,6 +126,18 @@ int MuonRawHistograms::execute(int ents){
                     hits_vs_r_L->Fill(hit_rad, prescale_HLT);
                     if (hit_adc > 50)
                         hits_vs_r_adc_L->Fill(hit_rad, prescale_HLT);
+
+                    if (chamber_phi ==  1) hits_vs_r_L_01->Fill(hit_rad, prescale_HLT);
+                    if (chamber_phi ==  3) hits_vs_r_L_03->Fill(hit_rad, prescale_HLT);
+                    if (chamber_phi ==  5) hits_vs_r_L_05->Fill(hit_rad, prescale_HLT);
+                    if (chamber_phi ==  7) hits_vs_r_L_07->Fill(hit_rad, prescale_HLT);
+                    if (chamber_phi ==  9) hits_vs_r_L_09->Fill(hit_rad, prescale_HLT);
+                    if (chamber_phi == 11) hits_vs_r_L_11->Fill(hit_rad, prescale_HLT);
+                    if (chamber_phi == 13) hits_vs_r_L_13->Fill(hit_rad, prescale_HLT);
+                    if (chamber_phi == 15) hits_vs_r_L_15->Fill(hit_rad, prescale_HLT);
+                    if (chamber_phi == 15 && chamber_side == "A") hits_vs_r_L_A15->Fill(hit_rad, prescale_HLT);
+                    if (chamber_phi == 15 && chamber_side == "C") hits_vs_r_L_C15->Fill(hit_rad, prescale_HLT);
+
                 }
             }
             if (chamber_type=="EIS" && (chamber_eta==1 || chamber_eta==2)){
@@ -317,6 +333,17 @@ void MuonRawHistograms::initialize_histograms(){
     hits_vs_r_S     = new TH1F(("hits_vs_r_S_"    +run).c_str(), "", xbins, xlo, 5440);
     hits_vs_r_adc_S = new TH1F(("hits_vs_r_adc_S_"+run).c_str(), "", xbins, xlo, 5440);
 
+    hits_vs_r_L_01  = new TH1F(("hits_vs_r_L_01_"+run).c_str(), "", xbins, xlo, 5200);
+    hits_vs_r_L_03  = new TH1F(("hits_vs_r_L_03_"+run).c_str(), "", xbins, xlo, 5200);
+    hits_vs_r_L_05  = new TH1F(("hits_vs_r_L_05_"+run).c_str(), "", xbins, xlo, 5200);
+    hits_vs_r_L_07  = new TH1F(("hits_vs_r_L_07_"+run).c_str(), "", xbins, xlo, 5200);
+    hits_vs_r_L_09  = new TH1F(("hits_vs_r_L_09_"+run).c_str(), "", xbins, xlo, 5200);
+    hits_vs_r_L_11  = new TH1F(("hits_vs_r_L_11_"+run).c_str(), "", xbins, xlo, 5200);
+    hits_vs_r_L_13  = new TH1F(("hits_vs_r_L_13_"+run).c_str(), "", xbins, xlo, 5200);
+    hits_vs_r_L_15  = new TH1F(("hits_vs_r_L_15_"+run).c_str(), "", xbins, xlo, 5200);
+    hits_vs_r_L_A15  = new TH1F(("hits_vs_r_L_A15_"+run).c_str(), "", xbins, xlo, 5200);
+    hits_vs_r_L_C15  = new TH1F(("hits_vs_r_L_C15_"+run).c_str(), "", xbins, xlo, 5200);
+
     xbins = 3600; xlo = 0; xhi = 3600;
     evts_vs_bcid          = new TH1F(("evts_vs_bcid_"+run).c_str(),          "", xbins, xlo, xhi);
     lumi_vs_bcid          = new TH1F(("lumi_vs_bcid_"+run).c_str(),          "", xbins, xlo, xhi);
@@ -359,9 +386,28 @@ void MuonRawHistograms::initialize_histograms(){
     histograms1D.push_back(hits_vs_r_S);
     histograms1D.push_back(hits_vs_r_adc_S);
 
+    histograms1D.push_back(hits_vs_r_L_01);
+    histograms1D.push_back(hits_vs_r_L_03);
+    histograms1D.push_back(hits_vs_r_L_05);
+    histograms1D.push_back(hits_vs_r_L_07);
+    histograms1D.push_back(hits_vs_r_L_09);
+    histograms1D.push_back(hits_vs_r_L_11);
+    histograms1D.push_back(hits_vs_r_L_13);
+    histograms1D.push_back(hits_vs_r_L_15);
+    histograms1D.push_back(hits_vs_r_L_A15);
+    histograms1D.push_back(hits_vs_r_L_C15);
+
     histograms1D.push_back(hits_vs_bcid_mdt_full);
     histograms1D.push_back(hits_vs_bcid_csc_full);
 
     for (auto hist: histograms1D) hist->Sumw2();
     for (auto hist: histograms2D) hist->Sumw2();
+
+    for (auto hist: histograms1D){
+        hist->SetMarkerStyle(20);
+        hist->SetMarkerSize(1);
+        hist->GetXaxis()->SetTitle("radius [mm]");
+        hist->GetYaxis()->SetTitle("hits in MDT EIL1, EIL2");
+    }
+
 }
