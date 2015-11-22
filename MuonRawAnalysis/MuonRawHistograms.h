@@ -124,8 +124,15 @@ class MuonRawHistograms {
     TH1F* hits_vs_r_L_11 = 0;
     TH1F* hits_vs_r_L_13 = 0;
     TH1F* hits_vs_r_L_15 = 0;
-    TH1F* hits_vs_r_L_A15 = 0;
-    TH1F* hits_vs_r_L_C15 = 0;
+
+    TH1F* hits_vs_r_S_02 = 0;
+    TH1F* hits_vs_r_S_04 = 0;
+    TH1F* hits_vs_r_S_06 = 0;
+    TH1F* hits_vs_r_S_08 = 0;
+    TH1F* hits_vs_r_S_10 = 0;
+    TH1F* hits_vs_r_S_12 = 0;
+    TH1F* hits_vs_r_S_14 = 0;
+    TH1F* hits_vs_r_S_16 = 0;
 
     std::vector<TH1F*> histograms1D;
     std::vector<TH2F*> histograms2D;
