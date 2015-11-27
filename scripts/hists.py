@@ -61,8 +61,11 @@ def parallelize_histograms(files):
 
     # map
     npool = min(len(configs), cpu, mp.cpu_count()-1)
-    pool = mp.Pool(npool)
-    results = pool.map(ntuple_to_histogram, configs)
+    if npool > 1:
+        pool = mp.Pool(npool)
+        results = pool.map(ntuple_to_histogram, configs)
+    else:
+        ntuple_to_histogram(configs[0])
 
     # reduce
     hadd("histograms.root", sorted(glob.glob("histograms_*.root")))
