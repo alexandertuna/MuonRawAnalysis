@@ -7,6 +7,7 @@
 #include <chrono>
 
 #include <TFile.h>
+#include <TDirectory.h>
 #include <TTree.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -25,6 +26,7 @@ class MuonRawHistograms {
 
     std::string  input_path = "";
     std::string output_path = "";
+    std::string run         = "";
 
     void announce();
     void initialize_branches();
@@ -60,9 +62,10 @@ class MuonRawHistograms {
     std::vector<int>*         mdt_chamber_eta_station   = 0; //!
     std::vector<int>*         mdt_chamber_phi_sector    = 0; //!
 
-    std::vector<int>*              mdt_chamber_tube_n   = 0; //!
-    std::vector<std::vector<int>>* mdt_chamber_tube_r   = 0; //!
-    std::vector<std::vector<int>>* mdt_chamber_tube_adc = 0; //!
+    std::vector<int>*              mdt_chamber_tube_n       = 0; //!
+    std::vector<std::vector<int>>* mdt_chamber_tube_r       = 0; //!
+    std::vector<std::vector<int>>* mdt_chamber_tube_adc     = 0; //!
+    std::vector<int>*              mdt_chamber_tube_n_adc50 = 0; //!
 
     int csc_chamber_n;
     std::vector<int>*         csc_chamber_r          = 0; //!
@@ -77,6 +80,7 @@ class MuonRawHistograms {
     std::vector<std::vector<int>>* csc_chamber_cluster_qmax        = 0; //!
     std::vector<std::vector<int>>* csc_chamber_cluster_strips      = 0; //!
     std::vector<std::vector<int>>* csc_chamber_cluster_measuresphi = 0; //!
+    std::vector<int>*              csc_chamber_cluster_n_qmax25    = 0; //!
 
     // outputs
     TH1F* evts = 0;
@@ -133,7 +137,8 @@ class MuonRawHistograms {
     std::vector<TH1F*> histograms1D;
     std::vector<TH2F*> histograms2D;
 
-    TFile* output;
+    TFile*      output;
+    TDirectory* outdir;
 
 };
 

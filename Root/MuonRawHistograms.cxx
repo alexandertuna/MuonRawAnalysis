@@ -6,6 +6,7 @@
 #include <chrono>
 
 #include <TFile.h>
+#include <TDirectory.h>
 #include <TTree.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -249,7 +250,8 @@ int MuonRawHistograms::execute(int ents){
 int MuonRawHistograms::finalize(){
 
     output = TFile::Open(output_path.c_str(), "recreate");
-    output->cd();
+    outdir = output->mkdir(run.c_str());
+    outdir->cd();
 
     for (auto hist: histograms1D) hist->Write();
     for (auto hist: histograms2D) hist->Write();
@@ -288,9 +290,10 @@ void MuonRawHistograms::initialize_branches(){
     tree->SetBranchAddress("mdt_chamber_eta_station", &mdt_chamber_eta_station);
     tree->SetBranchAddress("mdt_chamber_phi_sector",  &mdt_chamber_phi_sector);
 
-    tree->SetBranchAddress("mdt_chamber_tube_n",      &mdt_chamber_tube_n);
-    tree->SetBranchAddress("mdt_chamber_tube_r",      &mdt_chamber_tube_r);
-    tree->SetBranchAddress("mdt_chamber_tube_adc",    &mdt_chamber_tube_adc);
+    tree->SetBranchAddress("mdt_chamber_tube_n",       &mdt_chamber_tube_n);
+    tree->SetBranchAddress("mdt_chamber_tube_r",       &mdt_chamber_tube_r);
+    tree->SetBranchAddress("mdt_chamber_tube_adc",     &mdt_chamber_tube_adc);
+    tree->SetBranchAddress("mdt_chamber_tube_n_adc50", &mdt_chamber_tube_n_adc50);
 
     tree->SetBranchAddress("csc_chamber_n",              &csc_chamber_n);
     tree->SetBranchAddress("csc_chamber_r",              &csc_chamber_r);
@@ -298,18 +301,19 @@ void MuonRawHistograms::initialize_branches(){
     tree->SetBranchAddress("csc_chamber_side",           &csc_chamber_side);
     tree->SetBranchAddress("csc_chamber_phi_sector",     &csc_chamber_phi_sector);
 
-    tree->SetBranchAddress("csc_chamber_cluster_n",      &csc_chamber_cluster_n);
-    tree->SetBranchAddress("csc_chamber_cluster_r",      &csc_chamber_cluster_r);
-    tree->SetBranchAddress("csc_chamber_cluster_rmax",   &csc_chamber_cluster_rmax);
-    tree->SetBranchAddress("csc_chamber_cluster_qsum",   &csc_chamber_cluster_qsum);
-    tree->SetBranchAddress("csc_chamber_cluster_qmax",   &csc_chamber_cluster_qmax);
-    tree->SetBranchAddress("csc_chamber_cluster_strips", &csc_chamber_cluster_strips);
+    tree->SetBranchAddress("csc_chamber_cluster_n",        &csc_chamber_cluster_n);
+    tree->SetBranchAddress("csc_chamber_cluster_r",        &csc_chamber_cluster_r);
+    tree->SetBranchAddress("csc_chamber_cluster_rmax",     &csc_chamber_cluster_rmax);
+    tree->SetBranchAddress("csc_chamber_cluster_qsum",     &csc_chamber_cluster_qsum);
+    tree->SetBranchAddress("csc_chamber_cluster_qmax",     &csc_chamber_cluster_qmax);
+    tree->SetBranchAddress("csc_chamber_cluster_strips",   &csc_chamber_cluster_strips);
+    tree->SetBranchAddress("csc_chamber_cluster_n_qmax25", &csc_chamber_cluster_n_qmax25);
 }
 
 void MuonRawHistograms::initialize_histograms(){
 
     tree->GetEntry(1);
-    std::string run = std::to_string(RunNumber);
+    run = std::to_string(RunNumber);
     run = "00"+run;
 
     int xbins = 0; float xlo = 0; float xhi = 0;
