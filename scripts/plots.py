@@ -30,36 +30,43 @@ def options():
     return parser.parse_args()
 
 def main():
-    
+
     runs = [
-        # "00278880",
-        # "00279169",
-        # "00279345",
-        # "00279685",
-        # "00280464",
-        # "00280673",
+        "00278880",
+        "00279169",
+        #"00279345",
+        "00279685",
+        "00280464",
+        #"00280673",
         "00280862",
-        # "00281074",
+        #"00281074",
         "00281143",
         "00281411",
         "00282992",
         "00283429",
-        "00283780",
+        #"00283780",
         "00284213",
         "00284285",
         ]
+
+    # reorganize to deal with ROOT TLegend SetNColumns
+    runs = ["00278880", "00281411", 
+            "00279169", "00282992", 
+            "00279685", "00283429", 
+            "00280464", "00284213", 
+            "00280862", "00284285", 
+            "00281143",
+            ]
     
     for perbc in [False]:
-        plots_vs_lumi(runs, perbc, rate=True)
+        plots_vs_lumi(runs, perbc, rate=True, extrapolate=True)
 
-    for adc in [True, False]:
-        plots_vs_r(runs, adc)
+#    for adc in [True]:
+#        plots_vs_r(runs, adc)
 
-    plots_vs_bcid(runs)
+#    plots_vs_bcid(runs)
 
-def plots_vs_lumi(runs, perbc, rate):
-
-    graphical = False
+def plots_vs_lumi(runs, perbc, rate, extrapolate):
 
     ops = options()
     if not ops.output:
@@ -70,8 +77,9 @@ def plots_vs_lumi(runs, perbc, rate):
     colz()
 
     fits              = True
+    draw_slope        = False
     suppress_bullshit = True
-    design_bunches    = 2808.0
+    ndiv              = 505
 
     input = ROOT.TFile.Open("histograms.root")
     hists  = {}
@@ -79,11 +87,13 @@ def plots_vs_lumi(runs, perbc, rate):
     funcs  = {}
     template = "hits_vs_lumi_vs_evts_%s_%s"
     if perbc:
-        template = template
+        template = template.replace("lumi", "mu")
 
-    rangex = (0.2, 4.8) if not perbc else (1.2, 2.7)
-    rangex = (2.0, 5.4) if not perbc else (1.2, 2.7)
-    ndiv = 505
+    if not perbc:
+        if not extrapolate: rangex = (0.5, 5.4)
+        else:               rangex = (0.5, 5.5)
+    else:
+        rangex = (8, 19)
 
     for region in ["mdt_full",
                    "mdt_EIL1",
@@ -137,15 +147,7 @@ def plots_vs_lumi(runs, perbc, rate):
             hists[pfx].GetXaxis().SetNdivisions(ndiv)
             graphs[pfx] = ROOT.TGraph(hists[pfx])
             
-            if graphical:
-                graphs[pfx].SetMarkerColor(color(run))
-                graphs[pfx].SetLineColor(color(run))
-                graphs[pfx].SetMarkerStyle(20)
-                graphs[pfx].SetMarkerSize(0.8)
-                graphs[pfx].SetLineWidth(2)
-                graphs[pfx].Draw("Asame")
-            else:
-                hists[pfx].Draw("pe,same")
+            hists[pfx].Draw("pe,same")
 
             draw_logos(0.36, 0.86, run)
             ROOT.gPad.RedrawAxis()
@@ -161,8 +163,11 @@ def plots_vs_lumi(runs, perbc, rate):
 
         multi = ROOT.TMultiGraph()
 
-        xleg, yleg = 0.175, 0.86
-        legend = ROOT.TLegend(xleg, yleg-(0.035*len(runs)), xleg+0.2, yleg)
+        xleg, yleg = 0.180, 0.86
+        ydelta = (0.035*len(runs)) if draw_slope else (0.02*len(runs))
+        legend = ROOT.TLegend(xleg, yleg-ydelta, xleg+0.6, yleg)
+        if not draw_slope:
+            legend.SetNColumns(2)
 
         for run in runs:
             name = (template % (region, run)) + "_pfx"
@@ -173,7 +178,7 @@ def plots_vs_lumi(runs, perbc, rate):
             hists[name].GetYaxis().SetTitle(ytitle(name if not rate else name.replace("hits_", "rate_")))
 
             hists[name].SetMinimum(ymin(region))
-            hists[name].SetMaximum(ymax(region, rate))
+            hists[name].SetMaximum(ymax(region, rate, draw_slope))
             hists[name].SetLineColor(color(run))
             hists[name].SetMarkerColor(color(run))
             hists[name].SetMarkerStyle(20)
@@ -184,21 +189,15 @@ def plots_vs_lumi(runs, perbc, rate):
             hists[name].GetXaxis().SetLabelSize(0.05)
             hists[name].GetYaxis().SetLabelSize(0.05)
 
-            # hists[name].SetLineColor(0)
-
-            if graphical:
-                graphs[name].SetTitle(";%s;%s" % (hists[name].GetXaxis().GetTitle(),
-                                                  hists[name].GetYaxis().GetTitle(),
-                                                  ))
-                multi.Add(graphs[name], "PZ")
-            else:
-                hists[name].Draw("pe,same")
+            hists[name].Draw("pe,same")
 
             if fits:
                 x1 = hists[name].GetBinCenter(hists[name].FindFirstBinAbove()-1)
                 x2 = hists[name].GetBinCenter(hists[name].FindLastBinAbove()+1)
                 y1 = hists[name].GetBinContent(hists[name].FindFirstBinAbove())
                 y2 = hists[name].GetBinContent(hists[name].FindLastBinAbove())
+                if run == "00278880" and not perbc:
+                    x1 = 0.8
                 funcs[name] = ROOT.TF1("fit"+name,"[0]*(x) + [1]", x1, x2)
 
                 m = (y2-y1)/(x2-x1)
@@ -209,37 +208,23 @@ def plots_vs_lumi(runs, perbc, rate):
                 funcs[name].SetLineWidth(1)
                 funcs[name].SetLineStyle(1)
                 hists[name].Fit(funcs[name], "RWQN")
-                print " [ fit ] %s: %7.2f (%5.2f), %7.2f (%5.2f) %7.2f" % (
-                    run,
-                    funcs[name].GetParameter(0), funcs[name].GetParError(0),
-                    funcs[name].GetParameter(1), funcs[name].GetParError(1),
-                    funcs[name].GetChisquare(),
-                    )
+                # print " [ fit ] %s: %7.2f (%5.2f), %7.2f (%5.2f) %7.2f" % (
+                #     run,
+                #     funcs[name].GetParameter(0), funcs[name].GetParError(0),
+                #     funcs[name].GetParameter(1), funcs[name].GetParError(1),
+                #     funcs[name].GetChisquare(),
+                #     )
                 slope  = funcs[name].GetParameter(0)
                 offset = funcs[name].GetParameter(1)
                 chi2   = funcs[name].GetChisquare()
                 funcs[name].Draw("same")
 
-            capt = caption(run) if not fits else "%s (%.1f, %.1f)" % (caption(run), slope, offset)
+            capt = caption(run) if (not draw_slope or not fits) else "%s (%.2f, %.2f)" % (caption(run), slope, offset)
                 
             entry = legend.AddEntry(hists[name], capt, "")
             entry.SetTextColor(color(run))
 
-        if graphical:
-            multi.SetTitle(";%s;%s" % (multi.GetListOfGraphs()[0].GetXaxis().GetTitle(),
-                                       multi.GetListOfGraphs()[0].GetYaxis().GetTitle(),
-                                       ))
-            multi.SetMinimum(0.00)
-            multi.SetMaximum(ymax(region))
-            multi.Draw("Asame")
-            multi.GetXaxis().SetRangeUser(*rangex)
-            multi.Draw("Asame")
-            for run in runs:
-                name = (template % (region, run)) + "_pfx"
-                funcs[name].SetLineStyle(1)
-                funcs[name].Draw("same")
-            
-        draw_logos(0.36, 0.89)
+        draw_logos(0.36, 0.89, fit=draw_slope)
 
         legend.SetBorderSize(0)
         legend.SetFillColor(0)
@@ -247,7 +232,22 @@ def plots_vs_lumi(runs, perbc, rate):
         legend.SetTextSize(0.03)
         legend.Draw()
 
+        if rate:
+            canvas.SetName(canvas.GetName().replace("hits_", "rate_"))
+        if rate and extrapolate:
+            name = region+"extrap"
+            funcs[name] = ROOT.TF1("fit"+name,"[0]*(x) + [1]", 3, 6)
+            slope, offset = slope_offset(region)
+            funcs[name].SetParameter(0, slope)
+            funcs[name].SetParameter(1, offset)
+            funcs[name].SetLineColor(ROOT.kBlack)
+            funcs[name].SetLineWidth(1)
+            funcs[name].SetLineStyle(7)
+            funcs[name].Draw("same")
+
         ROOT.gPad.RedrawAxis()
+        ROOT.gPad.Modified()
+        ROOT.gPad.Update()
         canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
 
 
@@ -264,19 +264,23 @@ def plots_vs_r(runs, adc):
     input = ROOT.TFile.Open("histograms.root")
     hists  = {}
     funcs  = {}
-    rebin  = 1
+    rebin  = 4
 
     boundary = 2050 # mm
 
     # area vs r
     input_area = ROOT.TFile.Open("area.root")
-    area_L = input_area.Get("endcap_L_area")
-    area_S = input_area.Get("endcap_S_area")
+    area_L = input_area.Get("area_vs_r_L")
+    area_S = input_area.Get("area_vs_r_S")
 
     for hist in [area_L, area_S]:
         hist.Rebin(rebin)
         style_vs_r(hist)
         draw_vs_r(hist, ops.output)
+
+    sectors = ["L", "S", 
+               "adc_L", "adc_S",
+               ]
 
     # hits vs r
     for run in runs:
@@ -284,20 +288,20 @@ def plots_vs_r(runs, adc):
         name = "evts_%s" % (run)
         entries = input.Get(name).GetBinContent(1)
 
-        for sector in ["L", "S"]:
+        for sector in sectors:
 
             name = "hits_vs_r_%s_%s" % (sector, run)
-            if adc:
-                name = name.replace("_r", "_r_adc")
             hists[name] = input.Get(name)
+            if not hists[name]:
+                fatal("Could not retrieve %s" % (name))
             hists[name].Rebin(rebin)
             style_vs_r(hists[name])
             for bin in xrange(0, hists[name].GetNbinsX()+1):
                 hists[name].SetBinError(bin, 0)
-            draw_vs_r(hists[name], ops.output)
-
+            # draw_vs_r(hists[name], ops.output)
+            
             numer = copy.copy(hists[name])
-            denom = copy.copy(area_L if sector=="L" else area_S)
+            denom = copy.copy(area_L if "L" in sector else area_S)
 
             for bin in xrange(0, denom.GetNbinsX()+1):
                 radius   = denom.GetBinCenter(bin)
@@ -305,18 +309,24 @@ def plots_vs_r(runs, adc):
                 livetime = livetime_csc if radius < boundary else livetime_mdt
                 denom.SetBinContent(bin, entries * area * livetime)
 
-            ratio = copy.copy(hists[name])
-            ratio.Reset()
-            ratio.Divide(numer, denom)
-
             name = numer.GetName().replace("hits_", "rate_")
-            ratio.SetName(name)
-            style_vs_r(ratio)
-            ratio.GetYaxis().SetTitle(ratio.GetYaxis().GetTitle().replace("hits", "hit rate [ cm^{-2} s^{-1} ]"))
-            ratio.SetMaximum(950)
-            canvas = ROOT.TCanvas(name, name, 800, 800)
-            canvas.Draw()
-            ratio.Draw("psame")
+            hists[name] = copy.copy(numer)
+            hists[name].Reset()
+            hists[name].Divide(numer, denom)
+            hists[name].SetName(name)
+
+            style_vs_r(hists[name])
+            hists[name].GetYaxis().SetTitle(hists[name].GetYaxis().GetTitle().replace("hits", "hit rate [ cm^{-2} s^{-1} ]"))
+            hists[name].SetMaximum(950)
+
+        name = "rate_vs_r_%s" % (run)
+        canvas = ROOT.TCanvas(name, name, 800, 800)
+        canvas.Draw()
+            
+        for sector in sectors:
+            
+            name = "rate_vs_r_%s_%s" % (sector, run)
+            hists[name].Draw("psame")
 
             exponential_csc = ROOT.TF1("fit_csc_"+name,"expo(0)",  950, 2000)
             exponential_mdt = ROOT.TF1("fit_mdt_"+name,"expo(0)", 2050, 4400)
@@ -326,12 +336,12 @@ def plots_vs_r(runs, adc):
                 expo.SetLineColor(ROOT.kBlack)
                 expo.SetLineWidth(2)
                 expo.SetLineStyle(7)
-                ratio.Fit(expo, "RWQN")
+                hists[name].Fit(expo, "RWQN")
                 
                 expo.Draw("same")
 
-            canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
-
+        canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
+            
 def plots_vs_bcid(runs):
 
     ops = options()
@@ -398,7 +408,7 @@ def plots_vs_bcid(runs):
 def style_vs_r(hist, ndiv=505):
     name = hist.GetName()
     hist.SetMarkerColor(ROOT.kAzure+1 if "L" in name else ROOT.kRed)
-    hist.SetMarkerStyle(20)
+    hist.SetMarkerStyle(20 if not "adc" in name else 24)
     hist.SetMarkerSize(0.9)
     hist.GetXaxis().SetNdivisions(ndiv)
     hist.GetXaxis().SetRangeUser(700, 4700)
@@ -449,7 +459,11 @@ def draw_logos(xcoord=0.5, ycoord=0.5, run=None, fit=True):
         bunch = ROOT.TLatex(xcoord, ycoord-0.12, "%s bunches" % (bunches(run)))
     fits = ROOT.TLatex(xcoord+0.25, ycoord, "(slope, offset)")
 
-    logos = [atlas, runz, bunch] if run else [atlas, fits]
+    if run:
+        logos = [atlas, runz, bunch]
+    else:
+        if fit: logos = [atlas, fits]
+        else:   logos = [atlas]
 
     for logo in logos:
         ROOT.SetOwnership(logo, False)
@@ -465,36 +479,30 @@ def draw_logos(xcoord=0.5, ycoord=0.5, run=None, fit=True):
 
 def color(run):
 
-    if run == "00280862": return ROOT.kGray+2
+    if run == "00278880": return ROOT.kGray+2
+    if run == "00279169": return ROOT.kViolet
+    if run == "00279685": return ROOT.kMagenta
+    if run == "00280464": return ROOT.kRed+1
+    if run == "00280862": return ROOT.kRed-4
     if run == "00281143": return ROOT.kOrange-3
-    if run == "00281411": return ROOT.kRed
-    if run == "00282992": return ROOT.kMagenta
-    if run == "00283429": return ROOT.kViolet-5
-    if run == "00283780": return ROOT.kBlue
+    if run == "00281411": return ROOT.kOrange+4
+    if run == "00282992": return 210
+    if run == "00283429": return ROOT.kCyan+1
     if run == "00284213": return ROOT.kAzure+1
-    if run == "00284285": return 210
+    if run == "00284285": return ROOT.kBlue
 
-    if run == "00278880": return ROOT.kBlack
-    if run == "00279169": return ROOT.kGray
-    if run == "00279345": return ROOT.kGreen+3
-    if run == "00279685": return ROOT.kOrange+7
-    if run == "00280464": return ROOT.kBlack
-    if run == "00280614": return ROOT.kBlack
-    if run == "00280673": return ROOT.kRed
-    if run == "00280862": return 210
-    if run == "00281074": return ROOT.kBlue
-    if run == "00281143": return ROOT.kOrange+7
-    if run == "00281381": return ROOT.kViolet-5
-    if run == "00281385": return ROOT.kOrange-7
-    if run == "00281411": return ROOT.kOrange-3
-    if run == "00282992": return ROOT.kRed+3
-    if run == "00283429": return ROOT.kRed
-    if run == "00283780": return ROOT.kBlue
-    if run == "00284213": return ROOT.kBlack
-    if run == "00284285": return ROOT.kBlack
+    return ROOT.kBlack
 
-def ymax(region, rate=False):
-    if region == "mdt_full": return 6100 if not rate else   30
+def ymax(region, rate=False, draw_slope=True):
+
+    if rate and not draw_slope:
+        if region == "mdt_full": return  15
+        if region == "mdt_EIL1": return 180
+        if region == "mdt_EIS1": return 180
+        if region == "csc_CSL1": return 800
+        if region == "csc_CSS1": return 800
+
+    if region == "mdt_full": return 6100 if not rate else   20
     if region == "mdt_EIL1": return  550 if not rate else  200
     if region == "mdt_EIS1": return  380 if not rate else  200
     if region == "mdt_EIL2": return  180
@@ -523,13 +531,15 @@ def xtitle(name):
     if "_vs_bcid" in name: return "BCID"
     if "_vs_r"    in name: return "radius [mm]"
     if "_vs_lumi" in name: return "< inst. lumi. > [e^{33}_cm^{-2}_s^{-1}_]".replace("_", "#scale[0.5]{ }")
+    if "_vs_mu"   in name: return "< interactions per BC > (#mu)"
     
     if "endcap"   in name: return xtitle("_vs_r")
 
     return "fuck"
 
 def ytitle(name):
-    if "hits_vs_lumi" in name or "hits_vs_bcid" in name:
+
+    if any(tag in name for tag in ["hits_vs_lumi", "hits_vs_bcid", "hits_vs_mu"]):
         if "mdt_full" in name: return      "< MDT hits per event >"
         if "mdt_EIL1" in name: return "< MDT EIL1 hits per event >"
         if "mdt_EIL2" in name: return "< MDT EIL2 hits per event >"
@@ -538,7 +548,8 @@ def ytitle(name):
         if "csc_full" in name: return      "< CSC hits per event >"
         if "csc_CSL1" in name: return    "< CSC L hits per event >"
         if "csc_CSS1" in name: return    "< CSC S hits per event >"
-    if "rate_vs_lumi" in name:
+
+    if any(tag in name for tag in ["rate_vs_lumi", "rate_vs_mu"]):
         unit = "[Hz / cm^{2}]"
         if "mdt_full" in name: return      "MDT hit rate %s" % (unit)
         if "mdt_EIL1" in name: return "MDT EIL1 hit rate %s" % (unit)
@@ -587,10 +598,28 @@ def kill_weird_bins(hist):
     for bin in xrange(1, hist.GetNbinsX()):
         if hist.GetBinContent(bin-1) == 0 and hist.GetBinContent(bin+1) == 0:
             hist.SetBinContent(bin, 0)
+            hist.SetBinError(bin, 0)
         if hist.GetBinContent(bin-2) == 0 and hist.GetBinContent(bin+1) == 0:
             hist.SetBinContent(bin, 0)
+            hist.SetBinError(bin, 0)
         if hist.GetBinContent(bin-1) == 0 and hist.GetBinContent(bin+2) == 0:
             hist.SetBinContent(bin, 0)
+            hist.SetBinError(bin, 0)
+
+def slope_offset(region, bunches=2808):
+    if bunches == 2808:
+        if region == "csc_CSS1": return (82.984, 0)
+        if region == "csc_CSL1": return (80.863, 0)
+        if region == "mdt_EIS1": return (18.522, 0)
+        if region == "mdt_EIL1": return (19.531, 0)
+        if region == "mdt_full": return (0, 0)
+    if bunches == 3564:
+        if region == "csc_CSS1": return (75.131, 0)
+        if region == "csc_CSL1": return (72.823, 0)
+        if region == "mdt_EIS1": return (17.082, 0)
+        if region == "mdt_EIL1": return (17.745, 0)
+        if region == "mdt_full": return (0, 0)
+    fatal("No slope, offset for %s, %s bunches" % (region, bunches))
 
 def chamber_area():
 
