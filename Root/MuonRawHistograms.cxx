@@ -53,11 +53,12 @@ int MuonRawHistograms::execute(int ents){
     int hits_csc_CSL1 = 0;
     int hits_csc_CSS1 = 0;
 
-    std::string chamber_side = "";
-    std::string chamber_type = "";
-    int         chamber_eta  = 0;
-    int         chamber_phi  = 0;
-    int         chamber_hits = 0;
+    std::string chamber_side    = "";
+    std::string chamber_type    = "";
+    int         chamber_eta     = 0;
+    int         chamber_phi     = 0;
+    int         chamber_hits    = 0;
+    int         chamber_adchits = 0;
     
     int tree_entries = (int)(tree->GetEntries());
     if (ents < 0 || ents > tree_entries)
@@ -71,13 +72,13 @@ int MuonRawHistograms::execute(int ents){
 
         tree->GetEntry(ent);
 
-        if (ent % 5000 == 0) {
+        if (ent % 2000 == 0) {
             printf("%8i / %8i \n", ent, entries);
             printf("\033[F\033[J");
         } 
 
         hits_mdt_full = 0;
-        for (int eta = 1; eta <= eta_n; ++eta){
+        for (eta = 1; eta <= eta_n; ++eta){
             hits_mdt_BIL[eta] = 0; hits_mdt_BML[eta] = 0; hits_mdt_BOL[eta] = 0;
             hits_mdt_BIS[eta] = 0; hits_mdt_BMS[eta] = 0; hits_mdt_BOS[eta] = 0;
             hits_mdt_EIL[eta] = 0; hits_mdt_EML[eta] = 0; hits_mdt_EOL[eta] = 0;
@@ -90,11 +91,12 @@ int MuonRawHistograms::execute(int ents){
 
         for (ch = 0; ch < mdt_chamber_n; ++ch){
 
-            chamber_hits = mdt_chamber_tube_n->at(ch);
-            chamber_eta  = mdt_chamber_eta_station->at(ch);
-            chamber_phi  = mdt_chamber_phi_sector->at(ch);
-            chamber_type = mdt_chamber_type->at(ch);
-            chamber_side = mdt_chamber_side->at(ch);
+            chamber_hits    = mdt_chamber_tube_n->at(ch);
+            chamber_adchits = mdt_chamber_tube_n_adc50->at(ch);
+            chamber_eta     = mdt_chamber_eta_station->at(ch);
+            chamber_phi     = mdt_chamber_phi_sector->at(ch);
+            chamber_type    = mdt_chamber_type->at(ch);
+            chamber_side    = mdt_chamber_side->at(ch);
 
             hits_mdt_full += chamber_hits;
 
@@ -230,7 +232,22 @@ int MuonRawHistograms::execute(int ents){
         hits_vs_mu_vs_evts_csc_CSL1->Fill(avgIntPerXing, hits_csc_CSL1,   prescale_HLT);
         hits_vs_mu_vs_evts_csc_CSS1->Fill(avgIntPerXing, hits_csc_CSS1,   prescale_HLT);
 
-        // hits_vs_region_L->Fill(1, ybin("BIL"), prescale_HLT*(float)(hits_mdt_BIL1));
+        for (eta = 1; eta <= eta_n; ++eta){
+
+            hits_vs_region_L->Fill(eta, ybin("BIL"), prescale_HLT*(float)(hits_mdt_BIL[eta]));
+            hits_vs_region_L->Fill(eta, ybin("BML"), prescale_HLT*(float)(hits_mdt_BML[eta]));
+            hits_vs_region_L->Fill(eta, ybin("BOL"), prescale_HLT*(float)(hits_mdt_BOL[eta]));
+            hits_vs_region_L->Fill(eta, ybin("EIL"), prescale_HLT*(float)(hits_mdt_EIL[eta]));
+            hits_vs_region_L->Fill(eta, ybin("EML"), prescale_HLT*(float)(hits_mdt_EML[eta]));
+            hits_vs_region_L->Fill(eta, ybin("EOL"), prescale_HLT*(float)(hits_mdt_EOL[eta]));
+
+            hits_vs_region_S->Fill(eta, ybin("BIS"), prescale_HLT*(float)(hits_mdt_BIS[eta]));
+            hits_vs_region_S->Fill(eta, ybin("BMS"), prescale_HLT*(float)(hits_mdt_BMS[eta]));
+            hits_vs_region_S->Fill(eta, ybin("BOS"), prescale_HLT*(float)(hits_mdt_BOS[eta]));
+            hits_vs_region_S->Fill(eta, ybin("EIS"), prescale_HLT*(float)(hits_mdt_EIS[eta]));
+            hits_vs_region_S->Fill(eta, ybin("EMS"), prescale_HLT*(float)(hits_mdt_EMS[eta]));
+            hits_vs_region_S->Fill(eta, ybin("EOS"), prescale_HLT*(float)(hits_mdt_EOS[eta]));
+        }
 
         evts_vs_bcid->Fill(         bcid, prescale_HLT);
         lumi_vs_bcid->Fill(         bcid, prescale_HLT*lbLuminosityPerBCID);
@@ -400,6 +417,9 @@ void MuonRawHistograms::initialize_histograms(){
     histograms2D.push_back(hits_vs_mu_vs_evts_csc_CSL1);
     histograms2D.push_back(hits_vs_mu_vs_evts_csc_CSS1);
 
+    histograms2D.push_back(hits_vs_region_L);
+    histograms2D.push_back(hits_vs_region_S);
+
     histograms1D.push_back(hits_vs_r_L);
     histograms1D.push_back(hits_vs_r_adc_L);
     histograms1D.push_back(hits_vs_r_S);
@@ -436,7 +456,7 @@ void MuonRawHistograms::initialize_histograms(){
 
 }
 
-int ybin(std::string chamber_type){
+int MuonRawHistograms::ybin(std::string chamber_type){
     if (chamber_type == "BIL" || chamber_type == "BIS") return 1;
     if (chamber_type == "BML" || chamber_type == "BMS") return 2;
     if (chamber_type == "BOL" || chamber_type == "BOS") return 3;

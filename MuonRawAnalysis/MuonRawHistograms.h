@@ -53,6 +53,7 @@ class MuonRawHistograms {
     std::chrono::time_point<std::chrono::system_clock> time_start, time_end;
     std::chrono::duration<double> elapsed_seconds;
 
+    int eta   = 0;
     int eta_n = 8;
 
     // inputs
