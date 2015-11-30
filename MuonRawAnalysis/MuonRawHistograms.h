@@ -33,6 +33,10 @@ class MuonRawHistograms {
     void initialize_histograms();
 
     int ybin(std::string chamber_type);
+    int sign(std::string chamber_side);
+
+    std::string chamber = "";
+    TH2F* hist = 0;
 
     TFile* file;
     TTree* tree;
@@ -55,6 +59,12 @@ class MuonRawHistograms {
 
     int eta   = 0;
     int eta_n = 8;
+
+    std::vector<std::string> chamber_types = {"BIL", "BML", "BOL", "EIL", "EML", "EOL",
+                                              "BIS", "BMS", "BOS", "EIS", "EMS", "EOS",
+                                              "BEE", "BIM", "BIR", "BME", "BMF", "BOF", "BOG", 
+                                              "EEL", "EES"};
+    std::vector<std::string> chamber_sides = {"A", "B", "C"};
 
     // inputs
     int mdt_chamber_n;
@@ -81,7 +91,7 @@ class MuonRawHistograms {
     std::vector<std::vector<int>>* csc_chamber_cluster_qmax        = 0; //!
     std::vector<std::vector<int>>* csc_chamber_cluster_strips      = 0; //!
     std::vector<std::vector<int>>* csc_chamber_cluster_measuresphi = 0; //!
-    std::vector<int>*              csc_chamber_cluster_n_qmax25    = 0; //!
+    std::vector<int>*              csc_chamber_cluster_n_qmax100   = 0; //!
 
     // outputs
     TH1F* evts = 0;

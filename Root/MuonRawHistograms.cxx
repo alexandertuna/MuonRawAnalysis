@@ -44,10 +44,16 @@ int MuonRawHistograms::execute(int ents){
     int hit_adc = 0;
 
     int hits_mdt_full = 0;
-    std::map<int,int> hits_mdt_BIL, hits_mdt_BML, hits_mdt_BOL;
-    std::map<int,int> hits_mdt_BIS, hits_mdt_BMS, hits_mdt_BOS;
-    std::map<int,int> hits_mdt_EIL, hits_mdt_EML, hits_mdt_EOL;
-    std::map<int,int> hits_mdt_EIS, hits_mdt_EMS, hits_mdt_EOS;
+    std::map<int,int> hits_mdt_BIL_A, hits_mdt_BML_A, hits_mdt_BOL_A;
+    std::map<int,int> hits_mdt_BIS_A, hits_mdt_BMS_A, hits_mdt_BOS_A;
+    std::map<int,int> hits_mdt_EIL_A, hits_mdt_EML_A, hits_mdt_EOL_A;
+    std::map<int,int> hits_mdt_EIS_A, hits_mdt_EMS_A, hits_mdt_EOS_A;
+    std::map<int,int> hits_mdt_BIL_C, hits_mdt_BML_C, hits_mdt_BOL_C;
+    std::map<int,int> hits_mdt_BIS_C, hits_mdt_BMS_C, hits_mdt_BOS_C;
+    std::map<int,int> hits_mdt_EIL_C, hits_mdt_EML_C, hits_mdt_EOL_C;
+    std::map<int,int> hits_mdt_EIS_C, hits_mdt_EMS_C, hits_mdt_EOS_C;
+
+    std::map<std::string, int> hits_mdt;
 
     int hits_csc_full = 0;
     int hits_csc_CSL1 = 0;
@@ -79,11 +85,21 @@ int MuonRawHistograms::execute(int ents){
 
         hits_mdt_full = 0;
         for (eta = 1; eta <= eta_n; ++eta){
-            hits_mdt_BIL[eta] = 0; hits_mdt_BML[eta] = 0; hits_mdt_BOL[eta] = 0;
-            hits_mdt_BIS[eta] = 0; hits_mdt_BMS[eta] = 0; hits_mdt_BOS[eta] = 0;
-            hits_mdt_EIL[eta] = 0; hits_mdt_EML[eta] = 0; hits_mdt_EOL[eta] = 0;
-            hits_mdt_EIS[eta] = 0; hits_mdt_EMS[eta] = 0; hits_mdt_EOS[eta] = 0;
+            hits_mdt_BIL_A[eta] = 0; hits_mdt_BML_A[eta] = 0; hits_mdt_BOL_A[eta] = 0;
+            hits_mdt_BIS_A[eta] = 0; hits_mdt_BMS_A[eta] = 0; hits_mdt_BOS_A[eta] = 0;
+            hits_mdt_EIL_A[eta] = 0; hits_mdt_EML_A[eta] = 0; hits_mdt_EOL_A[eta] = 0;
+            hits_mdt_EIS_A[eta] = 0; hits_mdt_EMS_A[eta] = 0; hits_mdt_EOS_A[eta] = 0;
+
+            hits_mdt_BIL_C[eta] = 0; hits_mdt_BML_C[eta] = 0; hits_mdt_BOL_C[eta] = 0;
+            hits_mdt_BIS_C[eta] = 0; hits_mdt_BMS_C[eta] = 0; hits_mdt_BOS_C[eta] = 0;
+            hits_mdt_EIL_C[eta] = 0; hits_mdt_EML_C[eta] = 0; hits_mdt_EOL_C[eta] = 0;
+            hits_mdt_EIS_C[eta] = 0; hits_mdt_EMS_C[eta] = 0; hits_mdt_EOS_C[eta] = 0;
         }
+
+        for (auto type: chamber_types)
+            for (auto side: chamber_sides)
+                for (eta = 1; eta <= eta_n; ++eta)
+                    hits_mdt[type + std::to_string(eta) + side] = 0;
 
         hits_csc_full = 0;
         hits_csc_CSL1 = 0;
@@ -108,19 +124,38 @@ int MuonRawHistograms::execute(int ents){
                 continue;
             }
 
-            if      (chamber_type=="EIL") hits_mdt_EIL[chamber_eta] += chamber_hits;
-            else if (chamber_type=="EIS") hits_mdt_EIS[chamber_eta] += chamber_hits;
-            else if (chamber_type=="EML") hits_mdt_EML[chamber_eta] += chamber_hits;
-            else if (chamber_type=="EMS") hits_mdt_EMS[chamber_eta] += chamber_hits;
-            else if (chamber_type=="EOL") hits_mdt_EOL[chamber_eta] += chamber_hits;
-            else if (chamber_type=="EOS") hits_mdt_EOS[chamber_eta] += chamber_hits;
+            if (chamber_side=="A"){
+                if      (chamber_type=="EIL") hits_mdt_EIL_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EIS") hits_mdt_EIS_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EML") hits_mdt_EML_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EMS") hits_mdt_EMS_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EOL") hits_mdt_EOL_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EOS") hits_mdt_EOS_A[chamber_eta] += chamber_hits;
+                
+                else if (chamber_type=="BIL") hits_mdt_BIL_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BIS") hits_mdt_BIS_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BML") hits_mdt_BML_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BMS") hits_mdt_BMS_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BOL") hits_mdt_BOL_A[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BOS") hits_mdt_BOS_A[chamber_eta] += chamber_hits;
+            }
+            else if (chamber_side=="C"){
+                if      (chamber_type=="EIL") hits_mdt_EIL_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EIS") hits_mdt_EIS_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EML") hits_mdt_EML_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EMS") hits_mdt_EMS_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EOL") hits_mdt_EOL_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="EOS") hits_mdt_EOS_C[chamber_eta] += chamber_hits;
+                
+                else if (chamber_type=="BIL") hits_mdt_BIL_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BIS") hits_mdt_BIS_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BML") hits_mdt_BML_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BMS") hits_mdt_BMS_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BOL") hits_mdt_BOL_C[chamber_eta] += chamber_hits;
+                else if (chamber_type=="BOS") hits_mdt_BOS_C[chamber_eta] += chamber_hits;
+            }
 
-            else if (chamber_type=="BIL") hits_mdt_BIL[chamber_eta] += chamber_hits;
-            else if (chamber_type=="BIS") hits_mdt_BIS[chamber_eta] += chamber_hits;
-            else if (chamber_type=="BML") hits_mdt_BML[chamber_eta] += chamber_hits;
-            else if (chamber_type=="BMS") hits_mdt_BMS[chamber_eta] += chamber_hits;
-            else if (chamber_type=="BOL") hits_mdt_BOL[chamber_eta] += chamber_hits;
-            else if (chamber_type=="BOS") hits_mdt_BOS[chamber_eta] += chamber_hits;
+            hits_mdt[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits;
 
             if (chamber_type=="EIL" && (chamber_eta==1 || chamber_eta==2)){
                 for (hit = 0; hit < chamber_hits; ++hit){
@@ -178,7 +213,7 @@ int MuonRawHistograms::execute(int ents){
                     hit_rad = (csc_chamber_cluster_r->at(ch)).at(hit);
                     hit_adc = (csc_chamber_cluster_qmax->at(ch)).at(hit);
                     hits_vs_r_L->Fill(hit_rad, prescale_HLT);
-                    if (hit_adc > 25*1000)
+                    if (hit_adc > 100*1000.0)
                         hits_vs_r_adc_L->Fill(hit_rad, prescale_HLT);
 
                     if      (chamber_phi ==  1) hits_vs_r_L_01->Fill(hit_rad, prescale_HLT);
@@ -197,7 +232,7 @@ int MuonRawHistograms::execute(int ents){
                     hit_rad = (csc_chamber_cluster_r->at(ch)).at(hit);
                     hit_adc = (csc_chamber_cluster_qmax->at(ch)).at(hit);
                     hits_vs_r_S->Fill(hit_rad, prescale_HLT);
-                    if (hit_adc > 25*1000)
+                    if (hit_adc > 100*1000.0)
                         hits_vs_r_adc_S->Fill(hit_rad, prescale_HLT);
 
                     if      (chamber_phi ==  2) hits_vs_r_S_02->Fill(hit_rad, prescale_HLT);
@@ -214,40 +249,34 @@ int MuonRawHistograms::execute(int ents){
         
         evts->Fill(1, prescale_HLT);
 
-        hits_vs_lumi_vs_evts_mdt_full->Fill(lbAverageLuminosity/1000.0, hits_mdt_full,   prescale_HLT);
-        hits_vs_lumi_vs_evts_mdt_EIL1->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIL[1], prescale_HLT);
-        hits_vs_lumi_vs_evts_mdt_EIL2->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIL[2], prescale_HLT);
-        hits_vs_lumi_vs_evts_mdt_EIS1->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIS[1], prescale_HLT);
-        hits_vs_lumi_vs_evts_mdt_EIS2->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIS[2], prescale_HLT);
-        hits_vs_lumi_vs_evts_csc_full->Fill(lbAverageLuminosity/1000.0, hits_csc_full,   prescale_HLT);
-        hits_vs_lumi_vs_evts_csc_CSL1->Fill(lbAverageLuminosity/1000.0, hits_csc_CSL1,   prescale_HLT);
-        hits_vs_lumi_vs_evts_csc_CSS1->Fill(lbAverageLuminosity/1000.0, hits_csc_CSS1,   prescale_HLT);
+        hits_vs_lumi_vs_evts_mdt_full->Fill(lbAverageLuminosity/1000.0, hits_mdt_full,                       prescale_HLT);
+        hits_vs_lumi_vs_evts_mdt_EIL1->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIL_A[1]+hits_mdt_EIL_C[1], prescale_HLT);
+        hits_vs_lumi_vs_evts_mdt_EIL2->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIL_A[2]+hits_mdt_EIL_C[2], prescale_HLT);
+        hits_vs_lumi_vs_evts_mdt_EIS1->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIS_A[1]+hits_mdt_EIS_C[1], prescale_HLT);
+        hits_vs_lumi_vs_evts_mdt_EIS2->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIS_A[2]+hits_mdt_EIS_C[2], prescale_HLT);
+        hits_vs_lumi_vs_evts_csc_full->Fill(lbAverageLuminosity/1000.0, hits_csc_full,                       prescale_HLT);
+        hits_vs_lumi_vs_evts_csc_CSL1->Fill(lbAverageLuminosity/1000.0, hits_csc_CSL1,                       prescale_HLT);
+        hits_vs_lumi_vs_evts_csc_CSS1->Fill(lbAverageLuminosity/1000.0, hits_csc_CSS1,                       prescale_HLT);
 
-        hits_vs_mu_vs_evts_mdt_full->Fill(avgIntPerXing, hits_mdt_full,   prescale_HLT);
-        hits_vs_mu_vs_evts_mdt_EIL1->Fill(avgIntPerXing, hits_mdt_EIL[1], prescale_HLT);
-        hits_vs_mu_vs_evts_mdt_EIL2->Fill(avgIntPerXing, hits_mdt_EIL[2], prescale_HLT);
-        hits_vs_mu_vs_evts_mdt_EIS1->Fill(avgIntPerXing, hits_mdt_EIS[1], prescale_HLT);
-        hits_vs_mu_vs_evts_mdt_EIS2->Fill(avgIntPerXing, hits_mdt_EIS[2], prescale_HLT);
-        hits_vs_mu_vs_evts_csc_full->Fill(avgIntPerXing, hits_csc_full,   prescale_HLT);
-        hits_vs_mu_vs_evts_csc_CSL1->Fill(avgIntPerXing, hits_csc_CSL1,   prescale_HLT);
-        hits_vs_mu_vs_evts_csc_CSS1->Fill(avgIntPerXing, hits_csc_CSS1,   prescale_HLT);
+        hits_vs_mu_vs_evts_mdt_full->Fill(avgIntPerXing, hits_mdt_full,                       prescale_HLT);
+        hits_vs_mu_vs_evts_mdt_EIL1->Fill(avgIntPerXing, hits_mdt_EIL_A[1]+hits_mdt_EIL_C[1], prescale_HLT);
+        hits_vs_mu_vs_evts_mdt_EIL2->Fill(avgIntPerXing, hits_mdt_EIL_A[2]+hits_mdt_EIL_C[2], prescale_HLT);
+        hits_vs_mu_vs_evts_mdt_EIS1->Fill(avgIntPerXing, hits_mdt_EIS_A[1]+hits_mdt_EIS_C[1], prescale_HLT);
+        hits_vs_mu_vs_evts_mdt_EIS2->Fill(avgIntPerXing, hits_mdt_EIS_A[2]+hits_mdt_EIS_C[2], prescale_HLT);
+        hits_vs_mu_vs_evts_csc_full->Fill(avgIntPerXing, hits_csc_full,                       prescale_HLT);
+        hits_vs_mu_vs_evts_csc_CSL1->Fill(avgIntPerXing, hits_csc_CSL1,                       prescale_HLT);
+        hits_vs_mu_vs_evts_csc_CSS1->Fill(avgIntPerXing, hits_csc_CSS1,                       prescale_HLT);
 
-        for (eta = 1; eta <= eta_n; ++eta){
+        for (auto type: chamber_types)
+            for (auto side: chamber_sides)
+                for (eta = 1; eta <= eta_n; ++eta){
 
-            hits_vs_region_L->Fill(eta, ybin("BIL"), prescale_HLT*(float)(hits_mdt_BIL[eta]));
-            hits_vs_region_L->Fill(eta, ybin("BML"), prescale_HLT*(float)(hits_mdt_BML[eta]));
-            hits_vs_region_L->Fill(eta, ybin("BOL"), prescale_HLT*(float)(hits_mdt_BOL[eta]));
-            hits_vs_region_L->Fill(eta, ybin("EIL"), prescale_HLT*(float)(hits_mdt_EIL[eta]));
-            hits_vs_region_L->Fill(eta, ybin("EML"), prescale_HLT*(float)(hits_mdt_EML[eta]));
-            hits_vs_region_L->Fill(eta, ybin("EOL"), prescale_HLT*(float)(hits_mdt_EOL[eta]));
+                    // e.g., EIL1A
+                    chamber = type + std::to_string(eta) + side;
+                    hist = (type.find("L") != std::string::npos) ? hits_vs_region_L : hits_vs_region_S;
 
-            hits_vs_region_S->Fill(eta, ybin("BIS"), prescale_HLT*(float)(hits_mdt_BIS[eta]));
-            hits_vs_region_S->Fill(eta, ybin("BMS"), prescale_HLT*(float)(hits_mdt_BMS[eta]));
-            hits_vs_region_S->Fill(eta, ybin("BOS"), prescale_HLT*(float)(hits_mdt_BOS[eta]));
-            hits_vs_region_S->Fill(eta, ybin("EIS"), prescale_HLT*(float)(hits_mdt_EIS[eta]));
-            hits_vs_region_S->Fill(eta, ybin("EMS"), prescale_HLT*(float)(hits_mdt_EMS[eta]));
-            hits_vs_region_S->Fill(eta, ybin("EOS"), prescale_HLT*(float)(hits_mdt_EOS[eta]));
-        }
+                    hist->Fill(eta*sign(side), ybin(type), prescale_HLT*(float)(hits_mdt[chamber]));
+                }
 
         evts_vs_bcid->Fill(         bcid, prescale_HLT);
         lumi_vs_bcid->Fill(         bcid, prescale_HLT*lbLuminosityPerBCID);
@@ -318,13 +347,13 @@ void MuonRawHistograms::initialize_branches(){
     tree->SetBranchAddress("csc_chamber_side",           &csc_chamber_side);
     tree->SetBranchAddress("csc_chamber_phi_sector",     &csc_chamber_phi_sector);
 
-    tree->SetBranchAddress("csc_chamber_cluster_n",        &csc_chamber_cluster_n);
-    tree->SetBranchAddress("csc_chamber_cluster_r",        &csc_chamber_cluster_r);
-    tree->SetBranchAddress("csc_chamber_cluster_rmax",     &csc_chamber_cluster_rmax);
-    tree->SetBranchAddress("csc_chamber_cluster_qsum",     &csc_chamber_cluster_qsum);
-    tree->SetBranchAddress("csc_chamber_cluster_qmax",     &csc_chamber_cluster_qmax);
-    tree->SetBranchAddress("csc_chamber_cluster_strips",   &csc_chamber_cluster_strips);
-    tree->SetBranchAddress("csc_chamber_cluster_n_qmax25", &csc_chamber_cluster_n_qmax25);
+    tree->SetBranchAddress("csc_chamber_cluster_n",         &csc_chamber_cluster_n);
+    tree->SetBranchAddress("csc_chamber_cluster_r",         &csc_chamber_cluster_r);
+    tree->SetBranchAddress("csc_chamber_cluster_rmax",      &csc_chamber_cluster_rmax);
+    tree->SetBranchAddress("csc_chamber_cluster_qsum",      &csc_chamber_cluster_qsum);
+    tree->SetBranchAddress("csc_chamber_cluster_qmax",      &csc_chamber_cluster_qmax);
+    tree->SetBranchAddress("csc_chamber_cluster_strips",    &csc_chamber_cluster_strips);
+    tree->SetBranchAddress("csc_chamber_cluster_n_qmax100", &csc_chamber_cluster_n_qmax100);
 }
 
 void MuonRawHistograms::initialize_histograms(){
@@ -360,10 +389,16 @@ void MuonRawHistograms::initialize_histograms(){
     hits_vs_mu_vs_evts_csc_CSL1 = new TH2F(("hits_vs_mu_vs_evts_csc_CSL1_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo,  200);
     hits_vs_mu_vs_evts_csc_CSS1 = new TH2F(("hits_vs_mu_vs_evts_csc_CSS1_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo,  200);
 
-    xbins = 8; xlo = 0.5; xhi = 8.5;
-    ybins = 6; ylo = 0.5; yhi = 6.5;
+    xbins = 17; xlo = -8.5; xhi = 8.5;
+    ybins = 7;  ylo =  0.5; yhi = 7.5;
     hits_vs_region_L = new TH2F(("hits_vs_region_L_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo, yhi);
     hits_vs_region_S = new TH2F(("hits_vs_region_S_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo, yhi);
+
+    for (auto type: chamber_types){
+        hist = (type.find("L") != std::string::npos) ? hits_vs_region_L : hits_vs_region_S;
+        if (abs(ybin(type)) > 0)
+            hist->GetYaxis()->SetBinLabel(ybin(type), type.c_str());
+    }
 
     xbins = 500; xlo = 0; xhi = 5200;
     hits_vs_r_L     = new TH1F(("hits_vs_r_L_"    +run).c_str(), "", xbins, xlo, xhi);
@@ -461,8 +496,14 @@ int MuonRawHistograms::ybin(std::string chamber_type){
     if (chamber_type == "BML" || chamber_type == "BMS") return 2;
     if (chamber_type == "BOL" || chamber_type == "BOS") return 3;
     if (chamber_type == "EIL" || chamber_type == "EIS") return 4;
-    if (chamber_type == "EML" || chamber_type == "EMS") return 5;
-    if (chamber_type == "EOL" || chamber_type == "EOS") return 6;
+    if (chamber_type == "EEL" || chamber_type == "EES") return 5;
+    if (chamber_type == "EML" || chamber_type == "EMS") return 6;
+    if (chamber_type == "EOL" || chamber_type == "EOS") return 7;
     return 0;
 }
 
+int MuonRawHistograms::sign(std::string chamber_side){
+    if (chamber_side == "A") return  1;
+    if (chamber_side == "C") return -1;
+    return 0;
+}
