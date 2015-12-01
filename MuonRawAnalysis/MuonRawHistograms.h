@@ -121,8 +121,9 @@ class MuonRawHistograms {
 
     TH1F* hits_vs_r_L     = 0;
     TH1F* hits_vs_r_S     = 0;
-    TH1F* hits_vs_r_adc_L = 0;
-    TH1F* hits_vs_r_adc_S = 0;
+
+    TH1F* adchits_vs_r_L = 0;
+    TH1F* adchits_vs_r_S = 0;
 
     TH1F* hits_vs_r_L_01 = 0;
     TH1F* hits_vs_r_L_03 = 0;

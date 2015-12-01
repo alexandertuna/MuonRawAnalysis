@@ -44,15 +44,6 @@ int MuonRawHistograms::execute(int ents){
     int hit_adc = 0;
 
     int hits_mdt_full = 0;
-    std::map<int,int> hits_mdt_BIL_A, hits_mdt_BML_A, hits_mdt_BOL_A;
-    std::map<int,int> hits_mdt_BIS_A, hits_mdt_BMS_A, hits_mdt_BOS_A;
-    std::map<int,int> hits_mdt_EIL_A, hits_mdt_EML_A, hits_mdt_EOL_A;
-    std::map<int,int> hits_mdt_EIS_A, hits_mdt_EMS_A, hits_mdt_EOS_A;
-    std::map<int,int> hits_mdt_BIL_C, hits_mdt_BML_C, hits_mdt_BOL_C;
-    std::map<int,int> hits_mdt_BIS_C, hits_mdt_BMS_C, hits_mdt_BOS_C;
-    std::map<int,int> hits_mdt_EIL_C, hits_mdt_EML_C, hits_mdt_EOL_C;
-    std::map<int,int> hits_mdt_EIS_C, hits_mdt_EMS_C, hits_mdt_EOS_C;
-
     std::map<std::string, int> hits_mdt;
 
     int hits_csc_full = 0;
@@ -84,18 +75,6 @@ int MuonRawHistograms::execute(int ents){
         } 
 
         hits_mdt_full = 0;
-        for (eta = 1; eta <= eta_n; ++eta){
-            hits_mdt_BIL_A[eta] = 0; hits_mdt_BML_A[eta] = 0; hits_mdt_BOL_A[eta] = 0;
-            hits_mdt_BIS_A[eta] = 0; hits_mdt_BMS_A[eta] = 0; hits_mdt_BOS_A[eta] = 0;
-            hits_mdt_EIL_A[eta] = 0; hits_mdt_EML_A[eta] = 0; hits_mdt_EOL_A[eta] = 0;
-            hits_mdt_EIS_A[eta] = 0; hits_mdt_EMS_A[eta] = 0; hits_mdt_EOS_A[eta] = 0;
-
-            hits_mdt_BIL_C[eta] = 0; hits_mdt_BML_C[eta] = 0; hits_mdt_BOL_C[eta] = 0;
-            hits_mdt_BIS_C[eta] = 0; hits_mdt_BMS_C[eta] = 0; hits_mdt_BOS_C[eta] = 0;
-            hits_mdt_EIL_C[eta] = 0; hits_mdt_EML_C[eta] = 0; hits_mdt_EOL_C[eta] = 0;
-            hits_mdt_EIS_C[eta] = 0; hits_mdt_EMS_C[eta] = 0; hits_mdt_EOS_C[eta] = 0;
-        }
-
         for (auto type: chamber_types)
             for (auto side: chamber_sides)
                 for (eta = 1; eta <= eta_n; ++eta)
@@ -124,37 +103,6 @@ int MuonRawHistograms::execute(int ents){
                 continue;
             }
 
-            if (chamber_side=="A"){
-                if      (chamber_type=="EIL") hits_mdt_EIL_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EIS") hits_mdt_EIS_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EML") hits_mdt_EML_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EMS") hits_mdt_EMS_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EOL") hits_mdt_EOL_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EOS") hits_mdt_EOS_A[chamber_eta] += chamber_hits;
-                
-                else if (chamber_type=="BIL") hits_mdt_BIL_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BIS") hits_mdt_BIS_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BML") hits_mdt_BML_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BMS") hits_mdt_BMS_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BOL") hits_mdt_BOL_A[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BOS") hits_mdt_BOS_A[chamber_eta] += chamber_hits;
-            }
-            else if (chamber_side=="C"){
-                if      (chamber_type=="EIL") hits_mdt_EIL_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EIS") hits_mdt_EIS_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EML") hits_mdt_EML_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EMS") hits_mdt_EMS_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EOL") hits_mdt_EOL_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="EOS") hits_mdt_EOS_C[chamber_eta] += chamber_hits;
-                
-                else if (chamber_type=="BIL") hits_mdt_BIL_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BIS") hits_mdt_BIS_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BML") hits_mdt_BML_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BMS") hits_mdt_BMS_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BOL") hits_mdt_BOL_C[chamber_eta] += chamber_hits;
-                else if (chamber_type=="BOS") hits_mdt_BOS_C[chamber_eta] += chamber_hits;
-            }
-
             hits_mdt[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits;
 
             if (chamber_type=="EIL" && (chamber_eta==1 || chamber_eta==2)){
@@ -164,7 +112,7 @@ int MuonRawHistograms::execute(int ents){
                     hit_adc = (mdt_chamber_tube_adc->at(ch)).at(hit);
                     hits_vs_r_L->Fill(hit_rad, prescale_HLT);
                     if (hit_adc > 50)
-                        hits_vs_r_adc_L->Fill(hit_rad, prescale_HLT);
+                        adchits_vs_r_L->Fill(hit_rad, prescale_HLT);
 
                     if      (chamber_phi ==  1) hits_vs_r_L_01->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi ==  3) hits_vs_r_L_03->Fill(hit_rad, prescale_HLT);
@@ -183,7 +131,7 @@ int MuonRawHistograms::execute(int ents){
                     hit_adc = (mdt_chamber_tube_adc->at(ch)).at(hit);
                     hits_vs_r_S->Fill(hit_rad, prescale_HLT);
                     if (hit_adc > 50)
-                        hits_vs_r_adc_S->Fill(hit_rad, prescale_HLT);
+                        adchits_vs_r_S->Fill(hit_rad, prescale_HLT);
 
                     if      (chamber_phi ==  2) hits_vs_r_S_02->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi ==  4) hits_vs_r_S_04->Fill(hit_rad, prescale_HLT);
@@ -214,7 +162,7 @@ int MuonRawHistograms::execute(int ents){
                     hit_adc = (csc_chamber_cluster_qmax->at(ch)).at(hit);
                     hits_vs_r_L->Fill(hit_rad, prescale_HLT);
                     if (hit_adc > 100*1000.0)
-                        hits_vs_r_adc_L->Fill(hit_rad, prescale_HLT);
+                        adchits_vs_r_L->Fill(hit_rad, prescale_HLT);
 
                     if      (chamber_phi ==  1) hits_vs_r_L_01->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi ==  3) hits_vs_r_L_03->Fill(hit_rad, prescale_HLT);
@@ -233,7 +181,7 @@ int MuonRawHistograms::execute(int ents){
                     hit_adc = (csc_chamber_cluster_qmax->at(ch)).at(hit);
                     hits_vs_r_S->Fill(hit_rad, prescale_HLT);
                     if (hit_adc > 100*1000.0)
-                        hits_vs_r_adc_S->Fill(hit_rad, prescale_HLT);
+                        adchits_vs_r_S->Fill(hit_rad, prescale_HLT);
 
                     if      (chamber_phi ==  2) hits_vs_r_S_02->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi ==  4) hits_vs_r_S_04->Fill(hit_rad, prescale_HLT);
@@ -250,19 +198,21 @@ int MuonRawHistograms::execute(int ents){
         evts->Fill(1, prescale_HLT);
 
         hits_vs_lumi_vs_evts_mdt_full->Fill(lbAverageLuminosity/1000.0, hits_mdt_full,                       prescale_HLT);
-        hits_vs_lumi_vs_evts_mdt_EIL1->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIL_A[1]+hits_mdt_EIL_C[1], prescale_HLT);
-        hits_vs_lumi_vs_evts_mdt_EIL2->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIL_A[2]+hits_mdt_EIL_C[2], prescale_HLT);
-        hits_vs_lumi_vs_evts_mdt_EIS1->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIS_A[1]+hits_mdt_EIS_C[1], prescale_HLT);
-        hits_vs_lumi_vs_evts_mdt_EIS2->Fill(lbAverageLuminosity/1000.0, hits_mdt_EIS_A[2]+hits_mdt_EIS_C[2], prescale_HLT);
+        hits_vs_lumi_vs_evts_mdt_EIL1->Fill(lbAverageLuminosity/1000.0, hits_mdt["EIL1A"]+hits_mdt["EIL1C"], prescale_HLT);
+        hits_vs_lumi_vs_evts_mdt_EIL2->Fill(lbAverageLuminosity/1000.0, hits_mdt["EIL2A"]+hits_mdt["EIL2C"], prescale_HLT);
+        hits_vs_lumi_vs_evts_mdt_EIS1->Fill(lbAverageLuminosity/1000.0, hits_mdt["EIS1A"]+hits_mdt["EIS1C"], prescale_HLT);
+        hits_vs_lumi_vs_evts_mdt_EIS2->Fill(lbAverageLuminosity/1000.0, hits_mdt["EIS2A"]+hits_mdt["EIS2C"], prescale_HLT);
+
         hits_vs_lumi_vs_evts_csc_full->Fill(lbAverageLuminosity/1000.0, hits_csc_full,                       prescale_HLT);
         hits_vs_lumi_vs_evts_csc_CSL1->Fill(lbAverageLuminosity/1000.0, hits_csc_CSL1,                       prescale_HLT);
         hits_vs_lumi_vs_evts_csc_CSS1->Fill(lbAverageLuminosity/1000.0, hits_csc_CSS1,                       prescale_HLT);
 
         hits_vs_mu_vs_evts_mdt_full->Fill(avgIntPerXing, hits_mdt_full,                       prescale_HLT);
-        hits_vs_mu_vs_evts_mdt_EIL1->Fill(avgIntPerXing, hits_mdt_EIL_A[1]+hits_mdt_EIL_C[1], prescale_HLT);
-        hits_vs_mu_vs_evts_mdt_EIL2->Fill(avgIntPerXing, hits_mdt_EIL_A[2]+hits_mdt_EIL_C[2], prescale_HLT);
-        hits_vs_mu_vs_evts_mdt_EIS1->Fill(avgIntPerXing, hits_mdt_EIS_A[1]+hits_mdt_EIS_C[1], prescale_HLT);
-        hits_vs_mu_vs_evts_mdt_EIS2->Fill(avgIntPerXing, hits_mdt_EIS_A[2]+hits_mdt_EIS_C[2], prescale_HLT);
+        hits_vs_mu_vs_evts_mdt_EIL1->Fill(avgIntPerXing, hits_mdt["EIL1A"]+hits_mdt["EIL1C"], prescale_HLT);
+        hits_vs_mu_vs_evts_mdt_EIL2->Fill(avgIntPerXing, hits_mdt["EIL2A"]+hits_mdt["EIL2C"], prescale_HLT);
+        hits_vs_mu_vs_evts_mdt_EIS1->Fill(avgIntPerXing, hits_mdt["EIS1A"]+hits_mdt["EIS1C"], prescale_HLT);
+        hits_vs_mu_vs_evts_mdt_EIS2->Fill(avgIntPerXing, hits_mdt["EIS2A"]+hits_mdt["EIS2C"], prescale_HLT);
+
         hits_vs_mu_vs_evts_csc_full->Fill(avgIntPerXing, hits_csc_full,                       prescale_HLT);
         hits_vs_mu_vs_evts_csc_CSL1->Fill(avgIntPerXing, hits_csc_CSL1,                       prescale_HLT);
         hits_vs_mu_vs_evts_csc_CSS1->Fill(avgIntPerXing, hits_csc_CSS1,                       prescale_HLT);
@@ -282,7 +232,6 @@ int MuonRawHistograms::execute(int ents){
         lumi_vs_bcid->Fill(         bcid, prescale_HLT*lbLuminosityPerBCID);
         hits_vs_bcid_mdt_full->Fill(bcid, prescale_HLT*hits_mdt_full);
         hits_vs_bcid_csc_full->Fill(bcid, prescale_HLT*hits_csc_full);
-
     }
 
     time_end = std::chrono::system_clock::now();
@@ -402,7 +351,6 @@ void MuonRawHistograms::initialize_histograms(){
 
     xbins = 500; xlo = 0; xhi = 5200;
     hits_vs_r_L     = new TH1F(("hits_vs_r_L_"    +run).c_str(), "", xbins, xlo, xhi);
-    hits_vs_r_adc_L = new TH1F(("hits_vs_r_adc_L_"+run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_L_01  = new TH1F(("hits_vs_r_L_01_" +run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_L_03  = new TH1F(("hits_vs_r_L_03_" +run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_L_05  = new TH1F(("hits_vs_r_L_05_" +run).c_str(), "", xbins, xlo, xhi);
@@ -411,10 +359,10 @@ void MuonRawHistograms::initialize_histograms(){
     hits_vs_r_L_11  = new TH1F(("hits_vs_r_L_11_" +run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_L_13  = new TH1F(("hits_vs_r_L_13_" +run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_L_15  = new TH1F(("hits_vs_r_L_15_" +run).c_str(), "", xbins, xlo, xhi);
+    adchits_vs_r_L  = new TH1F(("adchits_vs_r_L_" +run).c_str(), "", xbins, xlo, xhi);
 
     xbins = 500; xlo = 0; xhi = 5440;
     hits_vs_r_S     = new TH1F(("hits_vs_r_S_"    +run).c_str(), "", xbins, xlo, xhi);
-    hits_vs_r_adc_S = new TH1F(("hits_vs_r_adc_S_"+run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_S_02  = new TH1F(("hits_vs_r_S_02_" +run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_S_04  = new TH1F(("hits_vs_r_S_04_" +run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_S_06  = new TH1F(("hits_vs_r_S_06_" +run).c_str(), "", xbins, xlo, xhi);
@@ -423,6 +371,7 @@ void MuonRawHistograms::initialize_histograms(){
     hits_vs_r_S_12  = new TH1F(("hits_vs_r_S_12_" +run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_S_14  = new TH1F(("hits_vs_r_S_14_" +run).c_str(), "", xbins, xlo, xhi);
     hits_vs_r_S_16  = new TH1F(("hits_vs_r_S_16_" +run).c_str(), "", xbins, xlo, xhi);
+    adchits_vs_r_S  = new TH1F(("adchits_vs_r_S_" +run).c_str(), "", xbins, xlo, xhi);
 
     xbins = 3600; xlo = 0; xhi = 3600;
     evts_vs_bcid          = new TH1F(("evts_vs_bcid_"+run).c_str(),          "", xbins, xlo, xhi);
@@ -456,9 +405,9 @@ void MuonRawHistograms::initialize_histograms(){
     histograms2D.push_back(hits_vs_region_S);
 
     histograms1D.push_back(hits_vs_r_L);
-    histograms1D.push_back(hits_vs_r_adc_L);
     histograms1D.push_back(hits_vs_r_S);
-    histograms1D.push_back(hits_vs_r_adc_S);
+    histograms1D.push_back(adchits_vs_r_L);
+    histograms1D.push_back(adchits_vs_r_S);
 
     histograms1D.push_back(hits_vs_r_L_01);
     histograms1D.push_back(hits_vs_r_L_03);
