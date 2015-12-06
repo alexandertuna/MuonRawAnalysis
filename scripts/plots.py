@@ -58,13 +58,19 @@ def main():
             "00281143",
             ]
     
-    for perbc in [False]:
-        plots_vs_lumi(runs, perbc, rate=True, extrapolate=True)
-
-#    for adc in [True]:
-#        plots_vs_r(runs, adc)
-
+    # reorganize to deal with ROOT TLegend SetNColumns
+    runs = ["00279169", "00281411", 
+            "00279685", "00282992", 
+            "00280464", "00283429", 
+            "00280862", "00284213", 
+            "00281143", "00284285", 
+            ]
+    
+#    for perbc in [False]:
+#        plots_vs_lumi(runs, perbc, rate=True, extrapolate=False)
+    plots_vs_r(runs)
 #    plots_vs_bcid(runs)
+#    plots_vs_region(runs)
 
 def plots_vs_lumi(runs, perbc, rate, extrapolate):
 
@@ -85,7 +91,7 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
     hists  = {}
     graphs = {}
     funcs  = {}
-    template = "hits_vs_lumi_vs_evts_%s_%s"
+    template = "hits_raw_vs_lumi_vs_evts_%s_%s"
     if perbc:
         template = template.replace("lumi", "mu")
 
@@ -113,9 +119,9 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
             canvas = ROOT.TCanvas(name, name, 800, 800)
             canvas.Draw()
 
-            hists[name] = input.Get(name)
+            hists[name] = input.Get(os.path.join(run, name))
             if not hists[name]:
-                fatal("Cannot retrieve %s" % (name))
+                fatal("Cannot retrieve %s" % (os.path.join(run, name)))
             yaxis = hists[name].GetYaxis()
             hists[name].GetXaxis().SetTitle(xtitle(name))
             hists[name].GetYaxis().SetTitle(ytitle(name))
@@ -251,7 +257,7 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
         canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
 
 
-def plots_vs_r(runs, adc):
+def plots_vs_r(runs):
 
     ops = options()
     if not ops.output:
@@ -279,21 +285,21 @@ def plots_vs_r(runs, adc):
         draw_vs_r(hist, ops.output)
 
     sectors = ["L", "S", 
-               "adc_L", "adc_S",
                ]
 
     # hits vs r
     for run in runs:
 
         name = "evts_%s" % (run)
-        entries = input.Get(name).GetBinContent(1)
+        entries = input.Get(os.path.join(run, name)).GetBinContent(1)
 
         for sector in sectors:
 
-            name = "hits_vs_r_%s_%s" % (sector, run)
-            hists[name] = input.Get(name)
+            # name = "hits_raw_vs_r_%s_%s" % (sector, run)
+            name = "hits_adc_vs_r_%s_%s" % (sector, run)
+            hists[name] = input.Get(os.path.join(run, name))
             if not hists[name]:
-                fatal("Could not retrieve %s" % (name))
+                fatal("Could not retrieve %s" % (os.path.join(run, name)))
             hists[name].Rebin(rebin)
             style_vs_r(hists[name])
             for bin in xrange(0, hists[name].GetNbinsX()+1):
@@ -319,13 +325,11 @@ def plots_vs_r(runs, adc):
             hists[name].GetYaxis().SetTitle(hists[name].GetYaxis().GetTitle().replace("hits", "hit rate [ cm^{-2} s^{-1} ]"))
             hists[name].SetMaximum(950)
 
-        name = "rate_vs_r_%s" % (run)
-        canvas = ROOT.TCanvas(name, name, 800, 800)
-        canvas.Draw()
-            
-        for sector in sectors:
-            
-            name = "rate_vs_r_%s_%s" % (sector, run)
+            #name = "rate_raw_vs_r_%s_%s" % (sector, run)
+            name = "rate_adc_vs_r_%s_%s" % (sector, run)
+            canvas = ROOT.TCanvas(name, name, 800, 800)
+            canvas.Draw()
+        
             hists[name].Draw("psame")
 
             exponential_csc = ROOT.TF1("fit_csc_"+name,"expo(0)",  950, 2000)
@@ -333,14 +337,52 @@ def plots_vs_r(runs, adc):
             for expo in [exponential_csc,
                          exponential_mdt,
                          ]:
+                expo.SetFillStyle(1001)
+                expo.SetFillColor(18)
                 expo.SetLineColor(ROOT.kBlack)
                 expo.SetLineWidth(2)
-                expo.SetLineStyle(7)
+                expo.SetLineStyle(1)
                 hists[name].Fit(expo, "RWQN")
-                
-                expo.Draw("same")
+                expo.Draw("FCsame")
 
-        canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
+                line_lo = ROOT.TLine(expo.GetMaximumX(), 0, expo.GetMaximumX(), expo.GetMaximum())
+                line_hi = ROOT.TLine(expo.GetMinimumX(), 0, expo.GetMinimumX(), expo.GetMinimum())
+                for line in [line_lo, line_hi]:
+                    ROOT.SetOwnership(line, False)
+                    line.SetLineColor(ROOT.kBlack)
+                    line.SetLineWidth(2)
+                    line.SetLineStyle(1)
+                    line.Draw()
+                    
+            hists[name].Draw("psame")
+
+            xleg, yleg = 0.60, 0.66
+            ydelta = 0.1
+            legend = ROOT.TLegend(xleg, yleg-ydelta, xleg+0.2, yleg)
+            legend.AddEntry(hists[name], "%s sectors" % (sector), "p")
+            legend.AddEntry(expo,        "expo. fits",            "f")
+            legend.SetBorderSize(0)
+            legend.SetFillColor(0)
+            legend.SetMargin(0.3)
+            legend.SetTextSize(0.045)
+            legend.Draw()
+            draw_logos(xcoord=0.55, ycoord=0.85, run=run, fit=False)
+
+            boundary_line = ROOT.TLine(boundary, 300, boundary, 500)
+            boundary_line.Draw()
+            arrow_csc = ROOT.TArrow(boundary, 400, boundary-350, 400, 0.01, "|>")
+            arrow_mdt = ROOT.TArrow(boundary, 350, boundary+350, 350, 0.01, "|>")
+            for arrow in [arrow_csc, arrow_mdt]:
+                arrow.Draw()
+            blurb_csc = ROOT.TLatex(boundary-280, 405, "CSC")
+            blurb_mdt = ROOT.TLatex(boundary+050, 355, "MDT")
+            for blurb in [blurb_csc, blurb_mdt]:
+                blurb.SetTextSize(0.025)
+                blurb.Draw()
+
+
+            ROOT.gPad.RedrawAxis()
+            canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
             
 def plots_vs_bcid(runs):
 
@@ -363,10 +405,10 @@ def plots_vs_bcid(runs):
     # hits vs bcid
     for run in runs:
 
-        entries         = input.Get("evts_%s" % (run)).GetBinContent(1)
-        entries_vs_bcid = input.Get("evts_vs_bcid_%s" % (run))
-        actlumi_vs_bcid = input.Get("lumi_vs_bcid_%s" % (run))
-        avglumi_vs_bcid = input.Get("lumi_vs_bcid_%s" % (run))
+        entries         = input.Get("%s/evts_%s"         % (run, run)).GetBinContent(1)
+        entries_vs_bcid = input.Get("%s/evts_vs_bcid_%s" % (run, run))
+        actlumi_vs_bcid = input.Get("%s/lumi_vs_bcid_%s" % (run, run))
+        avglumi_vs_bcid = input.Get("%s/lumi_vs_bcid_%s" % (run, run))
 
         actlumi_vs_bcid.GetYaxis().SetTitle("< inst. lumi. > per BCID per event [ e^{30} ]")
         avglumi_vs_bcid.GetYaxis().SetTitle("< inst. lumi. > per event [ e^{33} ]")
@@ -392,7 +434,7 @@ def plots_vs_bcid(runs):
         for det in ["mdt_full", "csc_full"]:
 
             name = "hits_vs_bcid_%s_%s" % (det, run)
-            hists[name] = input.Get(name)
+            hists[name] = input.Get(os.path.join(run, name))
             hists[name].GetYaxis().SetTitle("< hits in %s > per event" % (det.split("_")[0].upper()))
             if per_event:
                 hists[name].Divide(hists[name], entries_vs_bcid)
@@ -405,13 +447,74 @@ def plots_vs_bcid(runs):
             draw_logos(xcoord=0.35, ycoord=0.85, run=run, fit=False)
             canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
 
+def plots_vs_region(runs, rate=True):
+
+    colz()
+
+    ops = options()
+    if not ops.output:                ops.output = "output"
+    if not os.path.isdir(ops.output): os.makedirs(ops.output)
+
+    ROOT.gStyle.SetPadLeftMargin(0.12)
+    ROOT.gStyle.SetPadRightMargin(0.20)
+
+    input = ROOT.TFile.Open("histograms.root")
+    hists = {}
+
+    area = ROOT.TFile.Open("area.root")
+    area_L = area.Get("area_vs_region_L")
+    area_S = area.Get("area_vs_region_S")
+
+    # hits vs region
+    for sector in ["L", "S"]:
+        
+        for run in runs:
+
+            name = "evts_%s" % (run)
+            entries = input.Get(os.path.join(run, name)).GetBinContent(1)
+        
+            name = "hits_raw_vs_region_%s_%s" % (sector, run)
+            hists[name] = input.Get(os.path.join(run, name))
+            
+            hists[name].GetXaxis().SetTitle("eta station")
+            hists[name].GetZaxis().SetTitle("hits")
+            style_vs_region(hists[name], rate)
+
+            if rate:
+                
+                numer = copy.copy(hists[name])
+                denom = copy.copy(area_L if "L" in sector else area_S)
+                denom.Scale(livetime_mdt * entries)
+
+                name = numer.GetName().replace("hits_", "rate_")
+                hists[name] = copy.copy(numer)
+                hists[name].Reset()
+                hists[name].Divide(numer, denom)
+                hists[name].SetName(name)
+                hists[name].GetZaxis().SetTitle(ytitle(name))
+                hists[name].SetMaximum(109)
+
+            canvas = ROOT.TCanvas(name, name, 800, 800)
+            canvas.Draw()
+            hists[name].Draw("histsame,colz")
+            hists[name].Draw("histsame,text30")
+
+            logo = ROOT.TLatex(0.42, 0.97, "ATLAS Internal      Run %s    13 TeV" % (int(run)))
+            logo.SetTextSize(0.035)
+            logo.SetTextFont(42)
+            logo.SetTextAlign(22)
+            logo.SetNDC()
+            logo.Draw()
+
+            canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
+
 def style_vs_r(hist, ndiv=505):
     name = hist.GetName()
     hist.SetMarkerColor(ROOT.kAzure+1 if "L" in name else ROOT.kRed)
-    hist.SetMarkerStyle(20 if not "adc" in name else 24)
+    hist.SetMarkerStyle(20)
     hist.SetMarkerSize(0.9)
     hist.GetXaxis().SetNdivisions(ndiv)
-    hist.GetXaxis().SetRangeUser(700, 4700)
+    hist.GetXaxis().SetRangeUser(800, 4500)
     hist.GetXaxis().SetTitle(xtitle(name))
     hist.GetYaxis().SetTitle(ytitle(name))
     hist.GetXaxis().SetTitleSize(0.05)
@@ -451,11 +554,25 @@ def style_vs_bcid(hist, per_event, ndiv=505, setmax=False):
     if per_event and setmax:
         hist.SetMaximum(setmax)
 
+def style_vs_region(hist, rate):
+    name = hist.GetName()
+    hist.GetXaxis().SetTitleSize(0.05)
+    hist.GetYaxis().SetTitleSize(0.05)
+    hist.GetZaxis().SetTitleSize(0.05)
+    hist.GetXaxis().SetLabelSize(0.05)
+    hist.GetYaxis().SetLabelSize(0.07)
+    hist.GetZaxis().SetLabelSize(0.05)
+    hist.GetXaxis().SetTitleOffset(1.1)
+    hist.GetYaxis().SetTitleOffset(1.6)
+    hist.GetZaxis().SetTitleOffset(1.4)
+    if rate:
+        hist.SetMaximum(100)
+
 def draw_logos(xcoord=0.5, ycoord=0.5, run=None, fit=True):
 
     atlas = ROOT.TLatex(xcoord, ycoord,      "ATLAS Internal")
     if run:
-        runz  = ROOT.TLatex(xcoord, ycoord-0.06, "Run %s" % (run))
+        runz  = ROOT.TLatex(xcoord, ycoord-0.06, "Run %s" % (int(run)))
         bunch = ROOT.TLatex(xcoord, ycoord-0.12, "%s bunches" % (bunches(run)))
     fits = ROOT.TLatex(xcoord+0.25, ycoord, "(slope, offset)")
 
@@ -539,7 +656,9 @@ def xtitle(name):
 
 def ytitle(name):
 
-    if any(tag in name for tag in ["hits_vs_lumi", "hits_vs_bcid", "hits_vs_mu"]):
+    if any(tag in name for tag in ["hits_raw_vs_lumi",  "hits_raw_vs_mu", 
+                                   "hits_adc_vs_lumi",  "hits_adc_vs_mu", 
+                                   "hits_vs_bcid"]):
         if "mdt_full" in name: return      "< MDT hits per event >"
         if "mdt_EIL1" in name: return "< MDT EIL1 hits per event >"
         if "mdt_EIL2" in name: return "< MDT EIL2 hits per event >"
@@ -549,7 +668,9 @@ def ytitle(name):
         if "csc_CSL1" in name: return    "< CSC L hits per event >"
         if "csc_CSS1" in name: return    "< CSC S hits per event >"
 
-    if any(tag in name for tag in ["rate_vs_lumi", "rate_vs_mu"]):
+    if any(tag in name for tag in ["rate_raw_vs_lumi", "rate_raw_vs_mu",
+                                   "rate_adc_vs_lumi", "rate_adc_vs_mu",
+                                   ]):
         unit = "[Hz / cm^{2}]"
         if "mdt_full" in name: return      "MDT hit rate %s" % (unit)
         if "mdt_EIL1" in name: return "MDT EIL1 hit rate %s" % (unit)
@@ -560,9 +681,13 @@ def ytitle(name):
         if "csc_CSL1" in name: return    "CSC L hit rate %s" % (unit)
         if "csc_CSS1" in name: return    "CSC S hit rate %s" % (unit)
 
-    if "lumi_vs_bcid" in name: return "< inst. lumi. > [e^{30}_cm^{-2}_s^{-1}_]".replace("_", "#scale[0.5]{ }")
-    if "hits_vs_r"    in name: return "< hits per event >"
-    if "rate_vs_r"    in name: return "hit rate [Hz / cm^{2}]"
+    if "lumi_vs_bcid"       in name: return "< inst. lumi. > [e^{30}_cm^{-2}_s^{-1}_]".replace("_", "#scale[0.5]{ }")
+    if "hits_raw_vs_r"      in name: return "< hits per event >"
+    if "hits_adc_vs_r"      in name: return "< hits per event >"
+    if "rate_raw_vs_region" in name: return "MDT hit rate [Hz / cm^{2}]"
+    if "rate_adc_vs_region" in name: return "MDT hit rate [Hz / cm^{2}]"
+    if "rate_raw_vs_r"      in name: return     "hit rate [Hz / cm^{2}]"
+    if "rate_adc_vs_r"      in name: return     "hit rate [Hz / cm^{2}]"
 
     if name == "endcap_L_area": return "L area [cm^{2}]"
     if name == "endcap_S_area": return "S area [cm^{2}]"
@@ -649,11 +774,15 @@ def fatal(message):
 def colz():
     import array
     ncontours = 200
-    stops = array.array("d", [0.0, 0.3, 0.6, 1.0])
-    red   = array.array("d", [1.0, 1.0, 1.0, 0.0])
-    green = array.array("d", [1.0, 1.0, 0.0, 0.0])
-    blue  = array.array("d", [1.0, 0.0, 0.0, 0.0])
-    
+    #stops = array.array("d", [0.0, 0.3, 0.6, 1.0])
+    #red   = array.array("d", [1.0, 1.0, 1.0, 0.0])
+    #green = array.array("d", [1.0, 1.0, 0.0, 0.0])
+    #blue  = array.array("d", [1.0, 0.0, 0.0, 0.0])
+    stops = array.array("d", [0.0, 0.5, 1.0])
+    red   = array.array("d", [1.0, 1.0, 1.0])
+    green = array.array("d", [1.0, 1.0, 0.0])
+    blue  = array.array("d", [1.0, 0.0, 0.0])
+
     ROOT.TColor.CreateGradientColorTable(len(stops), stops, red, green, blue, ncontours)
     ROOT.gStyle.SetNumberContours(ncontours)
 
