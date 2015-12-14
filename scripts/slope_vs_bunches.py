@@ -1,4 +1,6 @@
 import array
+import sys
+
 import ROOT
 ROOT.gROOT.SetBatch(True)
 
@@ -16,41 +18,39 @@ bunches_hllhc = 3564
 lumi_run3  = 10
 lumi_hllhc = 70
 
-runs = [
-    "00278880",
-    "00279169",
-    "00279685",
-    "00280464",
-    "00280862",
-    "00281143",
-    "00281411",
-    "00282992",
-    "00283429",
-    "00283780",
-    "00284213",
-    "00284285",
-    ]
+bunches = {}
+slope   = {}
+graph   = {}
+fit     = {}
 
-slope = {}
-graph = {}
-fit   = {}
+regions = ["CSS1", "CSL1",
+           "EIS1", "EIL1",
+           ]
 
-bunches       = [447,    733,    1021,   1309,   1541,   1596,    1813,   1813,  2029,  2232,  2232,  2232]
-slope["CSS1"] = [270.48, 197.77, 159.79, 122.35, 120.00, 110.09,  98.58, 97.12, 94.01, 90.45, 93.93, 90.89]
-slope["CSL1"] = [277.55, 189.88, 159.49, 116.66, 121.88, 106.12, 107.80, 88.58, 93.50, 90.02, 92.75, 88.77]
+for region in regions:
+    bunches[region] = []
+    slope[  region] = []
 
-slope["EIL1"] = [ 62.02,  44.56,  37.19,  32.93,  28.02,  24.96,  21.36, 23.19, 21.74, 20.89, 21.03, 21.47]
-slope["EIS1"] = [ 52.78,  39.25,  33.54,  25.97,  25.36,  23.14,  21.11, 21.67, 20.37, 19.61, 19.98, 20.30]
+for line in open("slope_vs_bunches.txt").readlines():
 
-graph["CSS1"] = ROOT.TGraph(len(bunches), array.array("d", bunches), array.array("d", slope["CSS1"]))
-graph["CSL1"] = ROOT.TGraph(len(bunches), array.array("d", bunches), array.array("d", slope["CSL1"]))
-graph["EIL1"] = ROOT.TGraph(len(bunches), array.array("d", bunches), array.array("d", slope["EIL1"]))
-graph["EIS1"] = ROOT.TGraph(len(bunches), array.array("d", bunches), array.array("d", slope["EIS1"]))
+    line = line.strip()
+    if not line:
+        continue
+
+    _name, _run, _bunches, _slope, _offset = line.split()
+
+    for region in slope:
+        if region in _name:
+            slope[  region].append(float(_slope))
+            bunches[region].append(float(_bunches))
+            break
+    else:
+        sys.exit("Cant find relevant region for line:\n %s" % line)
 
 expression = "[0] + [1]/x"
-# expression = "[0] + [1]/x + [2]/(x*x)"
-for region in graph:
-    fit[region] = ROOT.TF1("fit_"+region, expression, 0, 3800)
+for region in regions:
+    fit[region]   = ROOT.TF1("fit_"+region, expression, 0, 3800)
+    graph[region] = ROOT.TGraph(len(bunches[region]), array.array("d", bunches[region]), array.array("d", slope[region]))
     graph[region].Fit(fit[region], "RWQN")
 
 def color(region):
@@ -124,7 +124,7 @@ for region in graph:
                                                                                 )
 print
 
-xcoord,ycoord = 0.7, 0.85
+xcoord, ycoord = 0.7, 0.85
 atlas = ROOT.TLatex(xcoord, ycoord,      "ATLAS Internal")
 data  = ROOT.TLatex(xcoord, ycoord-0.06, "Data, 13 TeV")
 logos = [atlas, data]
