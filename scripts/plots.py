@@ -59,18 +59,21 @@ def main():
             ]
     
     # reorganize to deal with ROOT TLegend SetNColumns
-    runs = ["00279169", "00281411", 
-            "00279685", "00282992", 
-            "00280464", "00283429", 
-            "00280862", "00284213", 
-            "00281143", "00284285", 
-            ]
+#     runs = ["00279169", "00281411", 
+#             "00279685", "00282992", 
+#             "00280464", "00283429", 
+#             "00280862", "00284213", 
+#             "00281143", "00284285", 
+#             ]
+
+    runs = sorted(runs)
     
-#    for perbc in [False]:
-#        plots_vs_lumi(runs, perbc, rate=True, extrapolate=False)
-    plots_vs_r(runs)
-#    plots_vs_bcid(runs)
-#    plots_vs_region(runs)
+    for perbc in [False]:
+        plots_vs_lumi(runs, perbc, rate=True, extrapolate=False)
+#     plots_vs_r(runs)
+#     plots_vs_bcid(runs)
+#     plots_vs_region(runs)
+#     plots_vs_lumi_vs_r(runs)
 
 def plots_vs_lumi(runs, perbc, rate, extrapolate):
 
@@ -80,6 +83,7 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
     if not os.path.isdir(ops.output): 
         os.makedirs(ops.output)
 
+    verbose = False
     colz()
 
     fits              = True
@@ -214,12 +218,15 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
                 funcs[name].SetLineWidth(1)
                 funcs[name].SetLineStyle(1)
                 hists[name].Fit(funcs[name], "RWQN")
-                # print " [ fit ] %s: %7.2f (%5.2f), %7.2f (%5.2f) %7.2f" % (
-                #     run,
-                #     funcs[name].GetParameter(0), funcs[name].GetParError(0),
-                #     funcs[name].GetParameter(1), funcs[name].GetParError(1),
-                #     funcs[name].GetChisquare(),
-                #     )
+                if verbose:
+                    print " [ fit ] %s: %7.2f (%5.2f), %7.2f (%5.2f) %7.2f" % (
+                        run,
+                        funcs[name].GetParameter(0), funcs[name].GetParError(0),
+                        funcs[name].GetParameter(1), funcs[name].GetParError(1),
+                        funcs[name].GetChisquare(),
+                        )
+                else:
+                    print "%20s %10s %5s %10.5f %10.5f" % (name, run, bunches(run), funcs[name].GetParameter(0), funcs[name].GetParameter(1))
                 slope  = funcs[name].GetParameter(0)
                 offset = funcs[name].GetParameter(1)
                 chi2   = funcs[name].GetChisquare()
@@ -508,6 +515,95 @@ def plots_vs_region(runs, rate=True):
 
             canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
 
+def plots_vs_lumi_vs_r(runs):
+
+    ops = options()
+    if not ops.output:                ops.output = "output"
+    if not os.path.isdir(ops.output): os.makedirs(ops.output)
+    
+    colz()
+    ROOT.gStyle.SetPadRightMargin(0.20)
+
+    input = ROOT.TFile.Open("histograms.root")
+    hists  = {}
+    funcs  = {}
+    rebin  = 4
+
+    boundary = 2050 # mm
+
+    # area vs r
+    input_area = ROOT.TFile.Open("area.root")
+    area_L = input_area.Get("area_vs_r_L")
+    area_S = input_area.Get("area_vs_r_S")
+
+    for hist in [area_L, area_S]:
+        hist.Rebin(rebin)
+
+    sectors = ["L", "S"]
+
+    # hits vs r
+    for run in runs:
+
+        name = "evts_vs_lumi_%s" % (run)
+        entries = input.Get(os.path.join(run, name))
+        entries.Rebin(rebin)
+
+        for sector in sectors:
+
+            name = "hits_raw_vs_lumi_vs_r_%s_%s" % (sector, run)
+            hists[name] = input.Get(os.path.join(run, name))
+            if not hists[name]:
+                fatal("Could not retrieve %s" % (os.path.join(run, name)))
+            hists[name].Rebin2D(rebin, rebin)
+
+            numer = copy.copy(hists[name])
+            denom = copy.copy(hists[name])
+            denom.Reset()
+            denom_area = copy.copy(area_L if "L" in sector else area_S)
+
+            if not denom.GetNbinsX() == entries.GetNbinsX():
+                fatal("Cannot make rate for %s. Conflict in x-axis and entries vs. lumi." % (name))
+
+            for xbin in xrange(denom.GetNbinsX()):
+
+                ents = entries.GetBinContent(xbin)
+
+                if not denom.GetNbinsY() == denom_area.GetNbinsX():
+                    fatal("Cannot make rate for %s. Conflict in y-axis and area." % (name))
+
+                for ybin in xrange(denom.GetNbinsY()):
+                    radius   = denom_area.GetBinCenter(ybin)
+                    area     = denom_area.GetBinContent(ybin)
+                    livetime = livetime_csc if radius < boundary else livetime_mdt
+                    denom.SetBinContent(xbin, ybin, ents * area * livetime)
+
+            name = numer.GetName().replace("hits_", "rate_")
+            hists[name] = copy.copy(numer)
+            hists[name].Reset()
+            hists[name].Divide(numer, denom)
+            hists[name].SetName(name)
+            style_vs_lumi_vs_r(hists[name])
+            for xbin in xrange(0, hists[name].GetNbinsX()+1):
+                for ybin in xrange(0, hists[name].GetNbinsY()+1):
+                    hists[name].SetBinError(xbin, ybin, 0)
+
+            name = "rate_raw_vs_lumi_vs_r_%s_%s" % (sector, run)
+            canvas = ROOT.TCanvas(name, name, 800, 800)
+            canvas.Draw()
+        
+            hists[name].Draw("colz,same")
+
+            xcoord, ycoord = 0.2, 0.96
+            atlas = ROOT.TLatex(xcoord, ycoord, "ATLAS Internal, Run %s      #rho = %.3f" % (run.lstrip("0"), hists[name].GetCorrelationFactor()))
+            atlas.SetTextSize(0.03)
+            atlas.SetTextFont(42)
+            atlas.SetNDC()
+            atlas.Draw()
+
+            ROOT.gPad.RedrawAxis()
+            canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
+            
+
 def style_vs_r(hist, ndiv=505):
     name = hist.GetName()
     hist.SetMarkerColor(ROOT.kAzure+1 if "L" in name else ROOT.kRed)
@@ -523,6 +619,25 @@ def style_vs_r(hist, ndiv=505):
     hist.GetYaxis().SetLabelSize(0.05)
     hist.GetXaxis().SetTitleOffset(1.2)
     hist.GetYaxis().SetTitleOffset(1.6)
+
+def style_vs_lumi_vs_r(hist, ndiv=505):
+    name = hist.GetName()
+    hist.GetXaxis().SetNdivisions(ndiv)
+    hist.GetYaxis().SetRangeUser(800, 4500)
+    if "284285" in name:
+        hist.GetXaxis().SetRangeUser(2.5, 5.5)
+    hist.GetXaxis().SetTitle(xtitle(name))
+    hist.GetYaxis().SetTitle(ytitle(name))
+    hist.GetZaxis().SetTitle(ytitle("rate"))
+    hist.GetXaxis().SetTitleSize(0.05)
+    hist.GetYaxis().SetTitleSize(0.05)
+    hist.GetZaxis().SetTitleSize(0.05)
+    hist.GetXaxis().SetLabelSize(0.05)
+    hist.GetYaxis().SetLabelSize(0.05)
+    hist.GetZaxis().SetLabelSize(0.05)
+    hist.GetXaxis().SetTitleOffset(1.1)
+    hist.GetYaxis().SetTitleOffset(1.7)
+    hist.GetZaxis().SetTitleOffset(1.4)
 
 def draw_vs_r(hist, output, height=800, width=800, drawopt="psame", logos=False):
     name = hist.GetName()
@@ -646,8 +761,8 @@ def ymin(region):
 
 def xtitle(name):
     if "_vs_bcid" in name: return "BCID"
-    if "_vs_r"    in name: return "radius [mm]"
     if "_vs_lumi" in name: return "< inst. lumi. > [e^{33}_cm^{-2}_s^{-1}_]".replace("_", "#scale[0.5]{ }")
+    if "_vs_r"    in name: return "radius [mm]"
     if "_vs_mu"   in name: return "< interactions per BC > (#mu)"
     
     if "endcap"   in name: return xtitle("_vs_r")
@@ -658,7 +773,7 @@ def ytitle(name):
 
     if any(tag in name for tag in ["hits_raw_vs_lumi",  "hits_raw_vs_mu", 
                                    "hits_adc_vs_lumi",  "hits_adc_vs_mu", 
-                                   "hits_vs_bcid"]):
+                                   "hits_vs_bcid"]) and not "vs_r" in name:
         if "mdt_full" in name: return      "< MDT hits per event >"
         if "mdt_EIL1" in name: return "< MDT EIL1 hits per event >"
         if "mdt_EIL2" in name: return "< MDT EIL2 hits per event >"
@@ -670,7 +785,7 @@ def ytitle(name):
 
     if any(tag in name for tag in ["rate_raw_vs_lumi", "rate_raw_vs_mu",
                                    "rate_adc_vs_lumi", "rate_adc_vs_mu",
-                                   ]):
+                                   ]) and not "vs_r" in name:
         unit = "[Hz / cm^{2}]"
         if "mdt_full" in name: return      "MDT hit rate %s" % (unit)
         if "mdt_EIL1" in name: return "MDT EIL1 hit rate %s" % (unit)
@@ -681,16 +796,20 @@ def ytitle(name):
         if "csc_CSL1" in name: return    "CSC L hit rate %s" % (unit)
         if "csc_CSS1" in name: return    "CSC S hit rate %s" % (unit)
 
-    if "lumi_vs_bcid"       in name: return "< inst. lumi. > [e^{30}_cm^{-2}_s^{-1}_]".replace("_", "#scale[0.5]{ }")
-    if "hits_raw_vs_r"      in name: return "< hits per event >"
-    if "hits_adc_vs_r"      in name: return "< hits per event >"
-    if "rate_raw_vs_region" in name: return "MDT hit rate [Hz / cm^{2}]"
-    if "rate_adc_vs_region" in name: return "MDT hit rate [Hz / cm^{2}]"
-    if "rate_raw_vs_r"      in name: return     "hit rate [Hz / cm^{2}]"
-    if "rate_adc_vs_r"      in name: return     "hit rate [Hz / cm^{2}]"
+    if "lumi_vs_bcid"          in name: return "< inst. lumi. > [e^{30}_cm^{-2}_s^{-1}_]".replace("_", "#scale[0.5]{ }")
+    if "hits_raw_vs_r"         in name: return "< hits per event >"
+    if "hits_adc_vs_r"         in name: return "< hits per event >"
+    if "rate_raw_vs_region"    in name: return "MDT hit rate [Hz / cm^{2}]"
+    if "rate_adc_vs_region"    in name: return "MDT hit rate [Hz / cm^{2}]"
+    if "rate_raw_vs_r"         in name: return     "hit rate [Hz / cm^{2}]"
+    if "rate_adc_vs_r"         in name: return     "hit rate [Hz / cm^{2}]"
+    if "rate_raw_vs_lumi_vs_r" in name: return "radius [mm]"
+    if "rate_adc_vs_lumi_vs_r" in name: return "radius [mm]"
 
     if name == "endcap_L_area": return "L area [cm^{2}]"
     if name == "endcap_S_area": return "S area [cm^{2}]"
+
+    if "rate" in name: return "hit rate [Hz / cm^{2}]"
 
     return "fuck"
             
