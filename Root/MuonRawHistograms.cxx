@@ -77,6 +77,8 @@ int MuonRawHistograms::execute(int ents){
             printf("\033[F\033[J");
         } 
 
+        lumi = lbAverageLuminosity/1000.0;
+
         hits_raw_mdt_full = 0;
         hits_adc_mdt_full = 0;
         for (auto type: chamber_types)
@@ -121,6 +123,8 @@ int MuonRawHistograms::execute(int ents){
                     else if (chamber_phi == 11) hits_raw_vs_r_L_11->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi == 13) hits_raw_vs_r_L_13->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi == 15) hits_raw_vs_r_L_15->Fill(hit_rad, prescale_HLT);
+
+                    hits_raw_vs_lumi_vs_r_L->Fill(lumi, hit_rad, prescale_HLT);
                 }
             }
             if (chamber_type=="EIS" && (chamber_eta==1 || chamber_eta==2)){
@@ -140,6 +144,8 @@ int MuonRawHistograms::execute(int ents){
                     else if (chamber_phi == 12) hits_raw_vs_r_S_12->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi == 14) hits_raw_vs_r_S_14->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi == 16) hits_raw_vs_r_S_16->Fill(hit_rad, prescale_HLT);
+
+                    hits_raw_vs_lumi_vs_r_S->Fill(lumi, hit_rad, prescale_HLT);
                 }
             }
         }
@@ -180,6 +186,8 @@ int MuonRawHistograms::execute(int ents){
                     else if (chamber_phi == 11) hits_raw_vs_r_L_11->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi == 13) hits_raw_vs_r_L_13->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi == 15) hits_raw_vs_r_L_15->Fill(hit_rad, prescale_HLT);
+
+                    hits_raw_vs_lumi_vs_r_L->Fill(lumi, hit_rad, prescale_HLT);
                 }
             }
             if (chamber_type=="CSS"){
@@ -199,6 +207,8 @@ int MuonRawHistograms::execute(int ents){
                     else if (chamber_phi == 12) hits_raw_vs_r_S_12->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi == 14) hits_raw_vs_r_S_14->Fill(hit_rad, prescale_HLT);
                     else if (chamber_phi == 16) hits_raw_vs_r_S_16->Fill(hit_rad, prescale_HLT);
+
+                    hits_raw_vs_lumi_vs_r_S->Fill(lumi, hit_rad, prescale_HLT);
                 }
             }
         }
@@ -256,6 +266,7 @@ int MuonRawHistograms::execute(int ents){
                     hist->Fill(eta*sign(side), ybin(type), prescale_HLT*(float)(hits_adc_mdt[chamber]));
                 }
 
+        evts_vs_lumi->Fill(         lumi, prescale_HLT);
         evts_vs_bcid->Fill(         bcid, prescale_HLT);
         lumi_vs_bcid->Fill(         bcid, prescale_HLT*lbLuminosityPerBCID);
         hits_vs_bcid_mdt_full->Fill(bcid, prescale_HLT*hits_raw_mdt_full);
@@ -330,7 +341,8 @@ void MuonRawHistograms::initialize_branches(){
     tree->SetBranchAddress("csc_chamber_cluster_qsum",      &csc_chamber_cluster_qsum);
     tree->SetBranchAddress("csc_chamber_cluster_qmax",      &csc_chamber_cluster_qmax);
     tree->SetBranchAddress("csc_chamber_cluster_strips",    &csc_chamber_cluster_strips);
-    tree->SetBranchAddress("csc_chamber_cluster_n_qmax100", &csc_chamber_cluster_n_qmax100);
+    tree->SetBranchAddress("csc_chamber_cluster_n_notecho", &csc_chamber_cluster_n_qmax100);
+    //tree->SetBranchAddress("csc_chamber_cluster_n_qmax100", &csc_chamber_cluster_n_qmax100);
 }
 
 void MuonRawHistograms::initialize_histograms(){
@@ -346,6 +358,7 @@ void MuonRawHistograms::initialize_histograms(){
     
     xbins = 200; xlo = 0; xhi = 6;
     ybins = 200; ylo = 0;
+    evts_vs_lumi                      = new TH1F(("evts_vs_lumi_"+run).c_str(),                      "", xbins, xlo, xhi);
     hits_raw_vs_lumi_vs_evts_mdt_full = new TH2F(("hits_raw_vs_lumi_vs_evts_mdt_full_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo, 5000);
     hits_raw_vs_lumi_vs_evts_mdt_EIL1 = new TH2F(("hits_raw_vs_lumi_vs_evts_mdt_EIL1_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo,  500);
     hits_raw_vs_lumi_vs_evts_mdt_EIL2 = new TH2F(("hits_raw_vs_lumi_vs_evts_mdt_EIL2_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo,  300);
@@ -383,6 +396,14 @@ void MuonRawHistograms::initialize_histograms(){
     hits_adc_vs_mu_vs_evts_csc_full = new TH2F(("hits_adc_vs_mu_vs_evts_csc_full_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo,  200);
     hits_adc_vs_mu_vs_evts_csc_CSL1 = new TH2F(("hits_adc_vs_mu_vs_evts_csc_CSL1_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo,  200);
     hits_adc_vs_mu_vs_evts_csc_CSS1 = new TH2F(("hits_adc_vs_mu_vs_evts_csc_CSS1_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo,  200);
+
+    
+    xbins = 200; xlo = 0; xhi = 6;
+    ybins = 500; ylo = 0; yhi = 5200;
+    hits_raw_vs_lumi_vs_r_L = new TH2F(("hits_raw_vs_lumi_vs_r_L_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo, yhi);
+
+    ybins = 500; ylo = 0; yhi = 5440;
+    hits_raw_vs_lumi_vs_r_S = new TH2F(("hits_raw_vs_lumi_vs_r_S_"+run).c_str(), "", xbins, xlo, xhi, ybins, ylo, yhi);
 
     xbins = 17; xlo = -8.5; xhi = 8.5;
     ybins = 7;  ylo =  0.5; yhi = 7.5;
@@ -434,6 +455,7 @@ void MuonRawHistograms::initialize_histograms(){
     hits_vs_bcid_csc_full = new TH1F(("hits_vs_bcid_csc_full_"+run).c_str(), "", xbins, xlo, xhi);
 
     histograms1D.push_back(evts);
+    histograms1D.push_back(evts_vs_lumi);
     histograms1D.push_back(evts_vs_bcid);
     histograms1D.push_back(lumi_vs_bcid);
 
@@ -472,6 +494,9 @@ void MuonRawHistograms::initialize_histograms(){
     histograms2D.push_back(hits_adc_vs_mu_vs_evts_csc_full);
     histograms2D.push_back(hits_adc_vs_mu_vs_evts_csc_CSL1);
     histograms2D.push_back(hits_adc_vs_mu_vs_evts_csc_CSS1);
+
+    histograms2D.push_back(hits_raw_vs_lumi_vs_r_L);
+    histograms2D.push_back(hits_raw_vs_lumi_vs_r_S);
 
     histograms2D.push_back(hits_raw_vs_region_L);
     histograms2D.push_back(hits_raw_vs_region_S);

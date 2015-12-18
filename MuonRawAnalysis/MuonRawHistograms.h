@@ -96,6 +96,7 @@ class MuonRawHistograms {
     // outputs
     TH1F* evts = 0;
 
+    TH1F* evts_vs_lumi          = 0;
     TH1F* evts_vs_bcid          = 0;
     TH1F* lumi_vs_bcid          = 0;
     TH1F* hits_vs_bcid_mdt_full = 0;
@@ -136,6 +137,9 @@ class MuonRawHistograms {
     TH2F* hits_adc_vs_mu_vs_evts_csc_full = 0;
     TH2F* hits_adc_vs_mu_vs_evts_csc_CSL1 = 0;
     TH2F* hits_adc_vs_mu_vs_evts_csc_CSS1 = 0;
+
+    TH2F* hits_raw_vs_lumi_vs_r_L = 0;
+    TH2F* hits_raw_vs_lumi_vs_r_S = 0;
 
     TH1F* hits_raw_vs_r_L = 0;
     TH1F* hits_raw_vs_r_S = 0;
