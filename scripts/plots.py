@@ -50,11 +50,11 @@ def main():
         ]
 
     # reorganize to deal with ROOT TLegend SetNColumns
-    runs = ["00278880", "00281411", 
-            "00279169", "00282992", 
-            "00279685", "00283429", 
-            "00280464", "00284213", 
-            "00280862", "00284285", 
+    runs = ["00278880", "00281411",
+            "00279169", "00282992",
+            "00279685", "00283429",
+            "00280464", "00284213",
+            "00280862", "00284285",
             "00281143",
             ]
     
@@ -108,6 +108,9 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
     for region in ["mdt_full",
                    "mdt_EIL1",
                    "mdt_EIS1",
+                   "mdt_EML1",
+                   "mdt_EMS1",
+                   "mdt_BIS8",
                    "csc_CSL1",
                    "csc_CSS1",
                    ]:
@@ -147,6 +150,12 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
                 if region == "mdt_EIL2": area = sum([areas[cham] for cham in filter(lambda key:   "EIL2" in key, areas)])
                 if region == "mdt_EIS1": area = sum([areas[cham] for cham in filter(lambda key:   "EIS1" in key, areas)])
                 if region == "mdt_EIS2": area = sum([areas[cham] for cham in filter(lambda key:   "EIS2" in key, areas)])
+                if region == "mdt_EML1": area = sum([areas[cham] for cham in filter(lambda key:   "EML1" in key, areas)])
+                if region == "mdt_EML2": area = sum([areas[cham] for cham in filter(lambda key:   "EML2" in key, areas)])
+                if region == "mdt_EMS1": area = sum([areas[cham] for cham in filter(lambda key:   "EMS1" in key, areas)])
+                if region == "mdt_EMS2": area = sum([areas[cham] for cham in filter(lambda key:   "EMS2" in key, areas)])
+                if region == "mdt_BIS7": area = sum([areas[cham] for cham in filter(lambda key:   "BIS7" in key, areas)])
+                if region == "mdt_BIS8": area = sum([areas[cham] for cham in filter(lambda key:   "BIS8" in key, areas)])
                 if region == "csc_CSL1": area = sum([areas[cham] for cham in filter(lambda key:   "CSL1" in key, areas)])
                 if region == "csc_CSS1": area = sum([areas[cham] for cham in filter(lambda key:   "CSS1" in key, areas)])
                 hists[pfx].Scale(1.0 / (livetime * area))
@@ -731,6 +740,9 @@ def ymax(region, rate=False, draw_slope=True):
         if region == "mdt_full": return  15
         if region == "mdt_EIL1": return 180
         if region == "mdt_EIS1": return 180
+        if region == "mdt_EML1": return  60
+        if region == "mdt_EMS1": return  60
+        if region == "mdt_BIS8": return  60
         if region == "csc_CSL1": return 800
         if region == "csc_CSS1": return 800
 
@@ -757,7 +769,7 @@ def ymin(region):
     if region == "csc_full": return 0
     if region == "csc_CSL1": return 0
     if region == "csc_CSS1": return 0
-    fatal("no ymin for %s" % (region))
+    return 0
 
 def xtitle(name):
     if "_vs_bcid" in name: return "BCID"
@@ -779,6 +791,12 @@ def ytitle(name):
         if "mdt_EIL2" in name: return "< MDT EIL2 hits per event >"
         if "mdt_EIS1" in name: return "< MDT EIS1 hits per event >"
         if "mdt_EIS2" in name: return "< MDT EIS2 hits per event >"
+        if "mdt_EML1" in name: return "< MDT EML1 hits per event >"
+        if "mdt_EML2" in name: return "< MDT EML2 hits per event >"
+        if "mdt_EMS1" in name: return "< MDT EMS1 hits per event >"
+        if "mdt_EMS2" in name: return "< MDT EMS2 hits per event >"
+        if "mdt_BIS7" in name: return "< MDT BIS7 hits per event >"
+        if "mdt_BIS8" in name: return "< MDT BIS8 hits per event >"
         if "csc_full" in name: return      "< CSC hits per event >"
         if "csc_CSL1" in name: return    "< CSC L hits per event >"
         if "csc_CSS1" in name: return    "< CSC S hits per event >"
@@ -792,6 +810,12 @@ def ytitle(name):
         if "mdt_EIL2" in name: return "MDT EIL2 hit rate %s" % (unit)
         if "mdt_EIS1" in name: return "MDT EIS1 hit rate %s" % (unit)
         if "mdt_EIS2" in name: return "MDT EIS2 hit rate %s" % (unit)
+        if "mdt_EML1" in name: return "MDT EML1 hit rate %s" % (unit)
+        if "mdt_EML2" in name: return "MDT EML2 hit rate %s" % (unit)
+        if "mdt_EMS1" in name: return "MDT EMS1 hit rate %s" % (unit)
+        if "mdt_EMS2" in name: return "MDT EMS2 hit rate %s" % (unit)
+        if "mdt_BIS7" in name: return "MDT BIS7 hit rate %s" % (unit)
+        if "mdt_BIS8" in name: return "MDT BIS8 hit rate %s" % (unit)
         if "csc_full" in name: return      "CSC hit rate %s" % (unit)
         if "csc_CSL1" in name: return    "CSC L hit rate %s" % (unit)
         if "csc_CSS1" in name: return    "CSC S hit rate %s" % (unit)

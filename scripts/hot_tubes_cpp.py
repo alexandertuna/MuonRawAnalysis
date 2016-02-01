@@ -7,11 +7,11 @@ output = "count_tubes.txt"
 
 # entries = 10000
 
-ROOT.gROOT.Macro("$ROOTCOREDIR/scripts/load_packages.C")
-job = ROOT.CountTubes(inp, output)
-job.initialize()
-job.execute()
-job.finalize()
+# ROOT.gROOT.Macro("$ROOTCOREDIR/scripts/load_packages.C")
+# job = ROOT.CountTubes(inp, output)
+# job.initialize()
+# job.execute()
+# job.finalize()
 
 counts = {}
 for line in open(output).readlines():
@@ -52,6 +52,8 @@ def show_overflow(hist):
         hist.SetBinError  (nbins, newerror)
 
 def fart():
+
+    entries = 76698
 
     import rootlogon
     ROOT.gStyle.SetPadRightMargin(0.06)
