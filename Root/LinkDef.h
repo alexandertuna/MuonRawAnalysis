@@ -2,6 +2,7 @@
 #define MUONRAWHITS_LINKDEF_H
 
 #include "MuonRawAnalysis/MuonRawHistograms.h"
+#include "MuonRawAnalysis/CountTubes.h"
 
 #ifdef __CINT__
 
@@ -11,6 +12,7 @@
 #pragma link C++ nestedclass;
 
 #pragma link C++ class MuonRawHistograms;
+#pragma link C++ class CountTubes;
 
 #endif
 
