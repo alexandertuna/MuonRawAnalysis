@@ -11,6 +11,7 @@ import glob
 import multiprocessing as mp
 import subprocess
 import sys
+import time
 import ROOT
 
 def options():
@@ -32,15 +33,18 @@ def main():
         else:
             inputs.append(inp)
 
-    for input in inputes:
-        counts = count_tubes(inputs)
-        for tube in counts:
-            print tube, counts[tube]
-        
-def count_tubes(input):
+    for inp in inputs:
 
-    file = ROOT.TFile.Open(input)
-    tree = file.Get("physics")
+        counts = count_tubes(inp)
+
+        tubes = sorted(counts.keys(), key=counts.get, reverse=True)
+        for tube in tubes[:500]:
+            print tube, counts[tube], counts["total"]
+            
+def count_tubes(inp):
+
+    rfile = ROOT.TFile.Open(inp)
+    tree  = rfile.Get("physics")
 
     tree.SetBranchStatus("*", 0)
     tree.SetBranchStatus("mdt_chamber_n",           1)
@@ -52,22 +56,43 @@ def count_tubes(input):
     tree.SetBranchStatus("mdt_chamber_tube_id",     1)
 
     counts = {}
-    for entry in xrange(10):
-        _ = tree.GetEntry(entry)
+    counts["total"] = 0
+
+    start_time = time.time()
+
+    entries = 25000
+
+    for ient in xrange(entries):
+
+        _ = tree.GetEntry(ient)
+        counts["total"] += 1
+
+        if ient and not ient % 500:
+            progress(start_time, ient, entries)
 
         for ich in xrange(tree.mdt_chamber_n):
-            chamber = "%s%i%s%2i" % (tree.mdt_chamber_type[ich],
-                                     tree.mdt_chamber_eta_station[ich],
-                                     tree.mdt_chamber_side[ich],
-                                     tree.mdt_chamber_phi_sector[ich])
-            print chamber
+
+            chamber = "%s%i%s%02i" % (tree.mdt_chamber_type[ich],
+                                      tree.mdt_chamber_eta_station[ich],
+                                      tree.mdt_chamber_side[ich],
+                                      tree.mdt_chamber_phi_sector[ich])
+
             for itu in xrange(tree.mdt_chamber_tube_n[ich]):
                 tube = "%s_%i" % (chamber, tree.mdt_chamber_tube_id[ich][itu])
-                print tube
                 counts[tube] = counts[tube]+1 if tube in counts else 1
-            print
 
     return counts
+
+def progress(start_time, ievent, nevents):
+    time_diff = time.time() - start_time
+    rate = float(ievent+1)/time_diff
+    sys.stdout.write("\r > %6i / %6i events | %2i%% | %6.2f Hz | %6.1fm elapsed | %6.1fm remaining" % (ievent, 
+                                                                                                       nevents, 
+                                                                                                       100*float(ievent)/float(nevents), 
+                                                                                                       rate, 
+                                                                                                       time_diff/60, 
+                                                                                                       (nevents-ievent)/(rate*60)))
+    sys.stdout.flush()
             
 def fatal(message):
     sys.exit("Error in %s: %s" % (__file__, message))
