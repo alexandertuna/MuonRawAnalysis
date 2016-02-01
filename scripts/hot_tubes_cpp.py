@@ -1,19 +1,17 @@
 import math
-import ROOT, rootlogon
+import ROOT
 ROOT.gROOT.SetBatch()
-# ROOT.gROOT.Macro("$ROOTCOREDIR/scripts/load_packages.C")
-
-ROOT.gStyle.SetPadRightMargin(0.06)
 
 inp    = "/n/atlasfs/atlasdata/tuna/MuonRawHits/batch-2016-01-31-17h22m18s/00284285/secondhalf/ntuple.2016-01-31-17h29m54s.Run00284285_2.root"
 output = "count_tubes.txt"
 
-entries = 10000
+# entries = 10000
 
-# job = ROOT.CountTubes(inp, output)
-# job.initialize()
-# job.execute(entries)
-# job.finalize()
+ROOT.gROOT.Macro("$ROOTCOREDIR/scripts/load_packages.C")
+job = ROOT.CountTubes(inp, output)
+job.initialize()
+job.execute()
+job.finalize()
 
 counts = {}
 for line in open(output).readlines():
@@ -53,64 +51,71 @@ def show_overflow(hist):
         hist.SetBinContent(nbins, newcontent)
         hist.SetBinError  (nbins, newerror)
 
-ignore_template = 'if (chamber == "%s" && ml == %s && layer == %s && tube == %s) return 1;'
+def fart():
 
-tubes = sorted(counts.keys(), key=counts.get, reverse=True)
-tubes = tubes[:300]
-tubes = sorted(tubes)
-for tube in tubes:
-    print tube, float(counts[tube])/100
-    if "total" in tube:
-        continue
-    if float(counts[tube])/100 < 10:
-        continue
-    chamber, id = tube.split("_")
-    ml, layer, tube = id[0], id[1], id[2:]
-    print ignore_template % (chamber, ml, layer, tube)
+    import rootlogon
+    ROOT.gStyle.SetPadRightMargin(0.06)
 
-print
-print
-occupancy = ROOT.TH1F("hist", ";occupancy [%];MDT tubes;", 100, 0, 20)
-occupancy.Sumw2()
-occupancy.SetLineColor(ROOT.kBlack)
-occupancy.SetLineWidth(2)
-occupancy.SetFillColor(19)
+    ignore_template = 'if (chamber == "%s" && ml == %s && layer == %s && tube == %s) return 1;'
 
-for line in open(output).readlines():
-    if not line:
-        continue
-    tube, count = line.split()
-    occup = 100*float(count)/entries
-    _ = occupancy.Fill(occup)
+    tubes = sorted(counts.keys(), key=counts.get, reverse=True)
+    tubes = tubes[:300]
+    tubes = sorted(tubes)
+    for tube in tubes:
+        print tube, float(counts[tube])/100
+        if "total" in tube:
+            continue
+        if float(counts[tube])/100 < 10:
+            continue
+        chamber, id = tube.split("_")
+        ml, layer, tube = id[0], id[1], id[2:]
+        print ignore_template % (chamber, ml, layer, tube)
 
-show_overflow(occupancy)
+    print
+    print
+    occupancy = ROOT.TH1F("hist", ";occupancy [%];MDT tubes;", 100, 0, 20)
+    occupancy.Sumw2()
+    occupancy.SetLineColor(ROOT.kBlack)
+    occupancy.SetLineWidth(2)
+    occupancy.SetFillColor(19)
+    
+    for line in open(output).readlines():
+        if not line:
+            continue
+        tube, count = line.split()
+        occup = 100*float(count)/entries
+        _ = occupancy.Fill(occup)
 
-canvas = ROOT.TCanvas("occupancy", "occupancy", 800, 800)
-canvas.Draw()
-occupancy.Draw("histsame")
-ROOT.gPad.SetLogy()
+    show_overflow(occupancy)
 
-cut_verti = ROOT.TLine( 10,   0, 10, 500)
-cut_horiz = ROOT.TArrow(10, 200, 11, 200, 0.01, "|>")
-for line in [cut_verti, cut_horiz]:
-    line.SetLineColor(ROOT.kRed)
-    if isinstance(line, ROOT.TArrow):
-        line.SetFillColor(ROOT.kRed)
-    line.SetLineWidth(2)
-    line.SetLineStyle(1)
-    line.Draw()
+    canvas = ROOT.TCanvas("occupancy", "occupancy", 800, 800)
+    canvas.Draw()
+    occupancy.Draw("histsame")
+    ROOT.gPad.SetLogy()
+    
+    cut_verti = ROOT.TLine( 10,   0, 10, 500)
+    cut_horiz = ROOT.TArrow(10, 200, 11, 200, 0.01, "|>")
+    for line in [cut_verti, cut_horiz]:
+        line.SetLineColor(ROOT.kRed)
+        if isinstance(line, ROOT.TArrow):
+            line.SetFillColor(ROOT.kRed)
+        line.SetLineWidth(2)
+        line.SetLineStyle(1)
+        line.Draw()
 
-xcoord, ycoord = 0.65, 0.80
-atlas = ROOT.TLatex(xcoord, ycoord,      "ATLAS Internal")
-data  = ROOT.TLatex(xcoord, ycoord-0.06, "13 TeV, Run 284285")
-logos = [atlas, data]
-for logo in logos:
-    logo.SetTextSize(0.040)
-    logo.SetTextFont(42)
-    logo.SetTextAlign(22)
-    logo.SetNDC()
-    logo.Draw()
+    xcoord, ycoord = 0.65, 0.80
+    atlas = ROOT.TLatex(xcoord, ycoord,      "ATLAS Internal")
+    data  = ROOT.TLatex(xcoord, ycoord-0.06, "13 TeV, Run 284285")
+    logos = [atlas, data]
+    for logo in logos:
+        logo.SetTextSize(0.040)
+        logo.SetTextFont(42)
+        logo.SetTextAlign(22)
+        logo.SetNDC()
+        logo.Draw()
+        
+    canvas.SaveAs(canvas.GetName()+".pdf")
 
 
-canvas.SaveAs(canvas.GetName()+".pdf")
+fart()
 
