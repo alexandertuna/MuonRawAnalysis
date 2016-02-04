@@ -38,8 +38,8 @@ def area_vs_region():
         chamber_eta  = int(chamber[3])
         chamber_side = chamber[4]
 
-        if "L" in chamber_type: area_L.Fill(chamber_eta*sign(chamber_side), ybin(chamber_type), area)
-        if "S" in chamber_type: area_S.Fill(chamber_eta*sign(chamber_side), ybin(chamber_type), area)
+        if chamber_type[2]=="L": area_L.Fill(chamber_eta*sign(chamber_side), ybin(chamber_type), area)
+        if chamber_type[2]=="S": area_S.Fill(chamber_eta*sign(chamber_side), ybin(chamber_type), area)
 
     # turn off uncertainties
     for hist in hists:
