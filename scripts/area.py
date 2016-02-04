@@ -23,16 +23,16 @@ def area_vs_region():
     yaxis = "chamber type"
 
     xbins, xlo, xhi = 17, -8.5, 8.5
-    ybins, ylo, yhi =  7,  0.5, 7.5
+    ybins, ylo, yhi =  8,  0.5, 8.5
 
     area_L = ROOT.TH2F("area_vs_region_L", ";%s;%s;%s" % (xaxis, yaxis, "area: L [cm^{2}]"), xbins, xlo, xhi, ybins, ylo, yhi)
     area_S = ROOT.TH2F("area_vs_region_S", ";%s;%s;%s" % (xaxis, yaxis, "area: S [cm^{2}]"), xbins, xlo, xhi, ybins, ylo, yhi)
     hists = [area_L, area_S]
 
-    mdt_chambers, mdt_areas = geometry_mdt_chambers()
+    all_chambers, all_areas = geometry_all_chambers()
 
     # mdt geometry
-    for chamber, area in zip(mdt_chambers, mdt_areas):
+    for chamber, area in zip(all_chambers, all_areas):
 
         chamber_type = chamber[:3]
         chamber_eta  = int(chamber[3])
@@ -49,7 +49,6 @@ def area_vs_region():
 
     return hists
 
-    # write
 def area_vs_r():
 
     xaxis = "radius [mm]"
@@ -85,11 +84,11 @@ def area_vs_r():
 
     return hists
 
-def geometry_mdt_chambers():
+def geometry_all_chambers():
 
     mm2_to_cm2  = (1/10.0)*(1/10.0)
     muonrawhits = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    geometry    = os.path.join(muonrawhits, "data/geometry/mdt_chambers.txt")
+    geometry    = os.path.join(muonrawhits, "data/geometry/all_chambers.txt")
     geometry    = geometry.replace("MuonRawAnalysis", "MuonRawHits")
 
     chambers = []
@@ -166,6 +165,7 @@ def ybin(chamber_type):
     if chamber_type == "EEL" or chamber_type == "EES": return 5
     if chamber_type == "EML" or chamber_type == "EMS": return 6
     if chamber_type == "EOL" or chamber_type == "EOS": return 7
+    if chamber_type == "CSL" or chamber_type == "CSS": return 8
     return 0
 
 def sign(chamber_side):
