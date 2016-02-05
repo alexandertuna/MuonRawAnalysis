@@ -13,9 +13,6 @@ ROOT.gStyle.SetPadRightMargin(0.06)
 bunches_run3  = 2808
 bunches_hllhc = 3564
 
-lumi_run3  = 10
-lumi_hllhc = 50
-
 def options():
     parser = argparse.ArgumentParser()
     parser.add_argument("--bunches",  help="Number of bunches. Must be 2808 or 3564.")
@@ -46,6 +43,8 @@ def main():
                  "CSS1",
                  "EIL1",
                  "EIS1",
+                 "EML1",
+                 "EMS1",
                  ]:
         fit[name] = ROOT.TF1("fit_"+name, "[0]*(x) + [1]", xlo, xhi)
         slope, offset = slope_offset(name, int(ops.bunches))
@@ -79,16 +78,18 @@ def main():
         fit[name].DrawCopy("same")
 
     legend = {}
-    xcoord, ycoord = 0.7, 0.56
+    xcoord, ycoord = 0.31, 0.56
     ydelta = 0.05
-    legend["CSL1"] = ROOT.TLatex(xcoord, ycoord-0*ydelta, "CSC, L")
-    legend["CSS1"] = ROOT.TLatex(xcoord, ycoord-1*ydelta, "CSC, S")
-    legend["EIL1"] = ROOT.TLatex(xcoord, ycoord-2*ydelta, "MDT, EIL1")
-    legend["EIS1"] = ROOT.TLatex(xcoord, ycoord-3*ydelta, "MDT, EIS1")
+    legend["CSL1"] = ROOT.TLatex(xcoord,      ycoord-0*ydelta, "CSC L")
+    legend["CSS1"] = ROOT.TLatex(xcoord,      ycoord-1*ydelta, "CSC S")
+    legend["EIL1"] = ROOT.TLatex(xcoord+0.37, ycoord-0*ydelta, "MDT EIL1")
+    legend["EIS1"] = ROOT.TLatex(xcoord+0.37, ycoord-1*ydelta, "MDT EIS1")
+    legend["EML1"] = ROOT.TLatex(xcoord+0.37, ycoord-2*ydelta, "MDT EML1")
+    legend["EMS1"] = ROOT.TLatex(xcoord+0.37, ycoord-3*ydelta, "MDT EMS1")
     
     for reg in legend:
         legend[reg].SetTextColor(color(reg))
-        legend[reg].SetTextSize(0.035)
+        legend[reg].SetTextSize(0.038)
         legend[reg].SetTextFont(42)
         legend[reg].SetNDC()
         legend[reg].Draw()
@@ -113,15 +114,19 @@ def fatal(message):
 def slope_offset(region, bunches=2808):
     # NB: slope in units of e33.
     if bunches == 2808:
-        if region == "CSS1": return (82.984, 0)
-        if region == "CSL1": return (80.863, 0)
-        if region == "EIS1": return (18.522, 0)
-        if region == "EIL1": return (19.531, 0)
+        if region == "CSS1": return (81.143, 0)
+        if region == "CSL1": return (79.872, 0)
+        if region == "EIS1": return (17.793, 0)
+        if region == "EIL1": return (18.872, 0)
+        if region == "EMS1": return ( 5.977, 0)
+        if region == "EML1": return ( 4.577, 0)
     if bunches == 3564:
-        if region == "CSS1": return (75.131, 0)
-        if region == "CSL1": return (72.823, 0)
-        if region == "EIS1": return (17.082, 0)
-        if region == "EIL1": return (17.745, 0)
+        if region == "CSS1": return (73.418, 0)
+        if region == "CSL1": return (72.360, 0)
+        if region == "EIS1": return (16.243, 0)
+        if region == "EIL1": return (16.992, 0)
+        if region == "EMS1": return ( 5.307, 0)
+        if region == "EML1": return ( 4.104, 0)
     fatal("No slope, offset for %s, %s bunches" % (region, bunches))
 
 def style(hist, ndiv=505):
@@ -142,35 +147,9 @@ def color(region):
     if region == "CSL1": return ROOT.kBlack
     if region == "EIS1": return ROOT.kRed
     if region == "EIL1": return 210
+    if region == "EMS1": return ROOT.kViolet
+    if region == "EML1": return ROOT.kOrange-3
 
 if __name__ == "__main__":
     main()
-
-# xcoord,ycoord = 0.7, 0.85
-# atlas = ROOT.TLatex(xcoord, ycoord,      "ATLAS Internal")
-# data  = ROOT.TLatex(xcoord, ycoord-0.06, "Data, 13 TeV")
-# logos = [atlas, data]
-# for logo in logos:
-#     logo.SetTextSize(0.040)
-#     logo.SetTextFont(42)
-#     logo.SetTextAlign(22)
-#     logo.SetNDC()
-#     logo.Draw()
-
-# legend = {}
-# ycoord = ycoord - 0.15
-# ydelta = 0.05
-# legend["CSL1"] = ROOT.TLatex(xcoord-0.2, ycoord-0*ydelta, "CSC, L")
-# legend["CSS1"] = ROOT.TLatex(xcoord-0.2, ycoord-1*ydelta, "CSC, S")
-# legend["EIL1"] = ROOT.TLatex(xcoord-0.2, ycoord-2*ydelta, "MDT, EIL1")
-# legend["EIS1"] = ROOT.TLatex(xcoord-0.2, ycoord-3*ydelta, "MDT, EIS1")
-
-# for reg in legend:
-#     legend[reg].SetTextColor(color(reg))
-#     legend[reg].SetTextSize(0.035)
-#     legend[reg].SetTextFont(42)
-#     legend[reg].SetNDC()
-#     legend[reg].Draw()
-
-
 

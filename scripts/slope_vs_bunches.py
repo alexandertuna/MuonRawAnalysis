@@ -12,6 +12,8 @@ ROOT.gStyle.SetPadBottomMargin(0.12)
 ROOT.gStyle.SetPadLeftMargin(0.18)
 ROOT.gStyle.SetPadRightMargin(0.06)
 
+logy = False
+
 bunches_run3  = 2808
 bunches_hllhc = 3564
 
@@ -25,6 +27,7 @@ fit     = {}
 
 regions = ["CSS1", "CSL1",
            "EIS1", "EIL1",
+           "EMS1", "EML1",
            ]
 
 for region in regions:
@@ -34,9 +37,9 @@ for region in regions:
 for line in open("slope_vs_bunches.txt").readlines():
 
     line = line.strip()
-    if not line:
-        continue
-
+    if not line:             continue
+    if line.startswith("#"): continue
+    
     _name, _run, _bunches, _slope, _offset = line.split()
 
     for region in slope:
@@ -58,6 +61,8 @@ def color(region):
     if region == "CSL1": return ROOT.kBlack
     if region == "EIS1": return ROOT.kRed
     if region == "EIL1": return 210
+    if region == "EMS1": return ROOT.kViolet
+    if region == "EML1": return ROOT.kOrange-3
 
 def style(gr, region):
     gr.SetMarkerColor(color(region))
@@ -75,8 +80,8 @@ name = "slope_vs_bunches"
 canvas = ROOT.TCanvas(name, name, 800, 800)
 canvas.Draw()
 
-multi.SetMinimum(0.00)
-multi.SetMaximum(300)
+multi.SetMinimum(0.00 if not logy else 3.5)
+multi.SetMaximum(300  if not logy else 500)
 multi.Draw("Asame")
 multi.GetXaxis().SetLimits(0, 3800)
 multi.GetXaxis().SetNdivisions(505)
@@ -98,9 +103,9 @@ for line in [line_run3, line_hllhc]:
 
 print
 print " %7s %7s +/- %7s | %10s +/- %10s | %10s %10s | %10s %10s" % ("region", "[0]", " ", "[1]", " ", 
-                                                                    "slope@2808", "slope@3564", "kHz@2808", "kHz@3564")
+                                                                    "slope@2808", "slope@3564", "Hz@2808", "Hz@3564")
 
-for region in graph:
+for region in sorted(regions):
     fit[region].SetLineColor(color(region))
     fit[region].SetLineWidth(2)
     fit[region].SetLineStyle(7)
@@ -112,19 +117,19 @@ for region in graph:
     slope_run3_up  = fit[region].GetParameter(0) + fit[region].GetParError(0) + (fit[region].GetParameter(1) + fit[region].GetParError(1))/bunches_run3
     slope_hllhc_up = fit[region].GetParameter(0) + fit[region].GetParError(0) + (fit[region].GetParameter(1) + fit[region].GetParError(1))/bunches_hllhc
 
-    print " %7s %7.3f +/- %7.3f | %10.1f +/- %10.1f | %10.3f %10.3f | %10.3f %10.3f" % (region,
-                                                                                fit[region].GetParameter(0),
-                                                                                fit[region].GetParError(0),
-                                                                                fit[region].GetParameter(1),
-                                                                                fit[region].GetParError(1),
-                                                                                slope_run3,
-                                                                                slope_hllhc,
-                                                                                lumi_run3  * slope_run3  / 1000,
-                                                                                lumi_hllhc * slope_hllhc / 1000,
-                                                                                )
+    print " %7s %7.3f +/- %7.3f | %10.1f +/- %10.1f | %10.1f %10.1f | %10.1f %10.1f" % (region,
+                                                                                        fit[region].GetParameter(0),
+                                                                                        fit[region].GetParError(0),
+                                                                                        fit[region].GetParameter(1),
+                                                                                        fit[region].GetParError(1),
+                                                                                        slope_run3,
+                                                                                        slope_hllhc,
+                                                                                        lumi_run3  * slope_run3, #  / 1000,
+                                                                                        lumi_hllhc * slope_hllhc, # / 1000,
+                                                                                        )
 print
 
-xcoord, ycoord = 0.7, 0.85
+xcoord, ycoord = 0.77, 0.81 if not logy else 0.85
 atlas = ROOT.TLatex(xcoord, ycoord,      "ATLAS Internal")
 data  = ROOT.TLatex(xcoord, ycoord-0.06, "Data, 13 TeV")
 logos = [atlas, data]
@@ -136,20 +141,26 @@ for logo in logos:
     logo.Draw()
 
 legend = {}
-ycoord = ycoord - 0.15
-ydelta = 0.05
-legend["CSL1"] = ROOT.TLatex(xcoord-0.2, ycoord-0*ydelta, "CSC, L")
-legend["CSS1"] = ROOT.TLatex(xcoord-0.2, ycoord-1*ydelta, "CSC, S")
-legend["EIL1"] = ROOT.TLatex(xcoord-0.2, ycoord-2*ydelta, "MDT, EIL1")
-legend["EIS1"] = ROOT.TLatex(xcoord-0.2, ycoord-3*ydelta, "MDT, EIS1")
+xcoord = 0.45 if not logy else 0.49
+ycoord = 0.80
+xdelta, ydelta = 0.05, 0.05
+legend["CSL1"] = ROOT.TLatex(xcoord, ycoord-0*ydelta, "CSC L")
+legend["CSS1"] = ROOT.TLatex(xcoord, ycoord-1*ydelta, "CSC S")
+legend["EIL1"] = ROOT.TLatex(xcoord, ycoord-(2 if not logy else  4.8)*ydelta, "MDT EIL1")
+legend["EIS1"] = ROOT.TLatex(xcoord, ycoord-(3 if not logy else  5.8)*ydelta, "MDT EIS1")
+legend["EML1"] = ROOT.TLatex(xcoord, ycoord-(4 if not logy else 10.1)*ydelta, "MDT EML1")
+legend["EMS1"] = ROOT.TLatex(xcoord, ycoord-(5 if not logy else  9.1)*ydelta, "MDT EMS1")
 
-for reg in legend:
+for reg in regions:
     legend[reg].SetTextColor(color(reg))
-    legend[reg].SetTextSize(0.035)
+    legend[reg].SetTextSize(0.038)
     legend[reg].SetTextFont(42)
     legend[reg].SetNDC()
     legend[reg].Draw()
 
-canvas.SaveAs(canvas.GetName()+".pdf")
+if logy:
+    ROOT.gPad.SetLogy()
+
+canvas.SaveAs("%s_%s.%s" % (canvas.GetName(), "log" if logy else "lin", "pdf"))
 
 
