@@ -87,7 +87,7 @@ def fatal(message):
 def style(hist, ndiv=505):
     ops = options()
     hist.SetStats(0)
-    hist.SetMinimum(0 if not "_hi" in hist.GetName() else 2e-6)
+    hist.SetMinimum(0 if not "_hi" in hist.GetName() else 2e-7)
     # hist.SetMaximum()
     hist.GetXaxis().SetNdivisions(ndiv)
     hist.GetXaxis().SetTitleSize(0.05)
