@@ -33,20 +33,25 @@ def main():
     minlr_vs_max_lo  = ROOT.TH2F("minlr_vs_max_lo", ";minimum of q(left), q(right);q(max);", 200,   -40,  120, 200, 0,  400)
     minlr_vs_max_hi  = ROOT.TH2F("minlr_vs_max_hi", ";minimum of q(left), q(right);q(max);", 200,  -600, 3000, 200, 0, 3600)
 
-    ytitle   = "N(strips)"
     xtitle_r = "r [mm]"
     xtitle_l = "inst. lumi. [e^{33} cm^{-2} s^{-1} ]"
-    xbins    = 30
+    ytitle   = "N(strips)"
+    ybins_lo = 30
+    ybins_hi = 120
 
-    r_vs_strips = ROOT.TH2F("r_vs_strips", ";%s;%s;" % (xtitle_r, ytitle), 100,  800, 2200, xbins, 0.5, xbins+0.5)
-    l_vs_strips = ROOT.TH2F("l_vs_strips", ";%s;%s;" % (xtitle_l, ytitle), 100,  3.0,  5.5, xbins, 0.5, xbins+0.5)
+    r_vs_strips_lo = ROOT.TH2F("r_vs_strips_lo", ";%s;%s;" % (xtitle_r, ytitle), 100,  800, 2200, ybins_lo, 0.5, ybins_lo+0.5)
+    r_vs_strips_hi = ROOT.TH2F("r_vs_strips_hi", ";%s;%s;" % (xtitle_r, ytitle), 100,  800, 2200, ybins_hi, 0.5, ybins_hi+0.5)
+    l_vs_strips_lo = ROOT.TH2F("l_vs_strips_lo", ";%s;%s;" % (xtitle_l, ytitle), 100,  3.0,  5.5, ybins_lo, 0.5, ybins_lo+0.5)
+    l_vs_strips_hi = ROOT.TH2F("l_vs_strips_hi", ";%s;%s;" % (xtitle_l, ytitle), 100,  3.0,  5.5, ybins_hi, 0.5, ybins_hi+0.5)
     
     h2s = [minlr_vs_max_lo, 
            minlr_vs_max_hi,
            left_vs_right_lo, 
            left_vs_right_hi,
-           r_vs_strips,
-           l_vs_strips,
+           r_vs_strips_lo,
+           r_vs_strips_hi,
+           l_vs_strips_lo,
+           l_vs_strips_hi,
            ]
 
     ch.Draw("csc_chamber_cluster_qright/1000:csc_chamber_cluster_qleft/1000 >> left_vs_right_lo", "prescale_HLT", "goff")
@@ -55,21 +60,24 @@ def main():
     ch.Draw("csc_chamber_cluster_qmax/1000:min(csc_chamber_cluster_qleft, csc_chamber_cluster_qright)/1000 >> minlr_vs_max_lo", "prescale_HLT", "goff")
     ch.Draw("csc_chamber_cluster_qmax/1000:min(csc_chamber_cluster_qleft, csc_chamber_cluster_qright)/1000 >> minlr_vs_max_hi", "prescale_HLT", "goff")
 
-    ch.Draw("csc_chamber_cluster_strips:csc_chamber_cluster_r      >> r_vs_strips", "prescale_HLT", "goff")
-    ch.Draw("csc_chamber_cluster_strips:lbAverageLuminosity/1000.0 >> l_vs_strips", "prescale_HLT", "goff")
+    ch.Draw("csc_chamber_cluster_strips:csc_chamber_cluster_r      >> r_vs_strips_lo", "prescale_HLT", "goff")
+    ch.Draw("csc_chamber_cluster_strips:csc_chamber_cluster_r      >> r_vs_strips_hi", "prescale_HLT", "goff")
+    ch.Draw("csc_chamber_cluster_strips:lbAverageLuminosity/1000.0 >> l_vs_strips_lo", "prescale_HLT", "goff")
+    ch.Draw("csc_chamber_cluster_strips:lbAverageLuminosity/1000.0 >> l_vs_strips_hi", "prescale_HLT", "goff")
 
     for h2 in h2s:
 
-        style(h2)
-        
         integral = h2.Integral(0, h2.GetNbinsX()+1, 0, h2.GetNbinsY()+1)
         h2.Scale(1/integral)
 
+        style(h2)
+        
         name = "csc_q_"+h2.GetName()
         canvas = ROOT.TCanvas(name, name, 800, 800)
         canvas.Draw()
         h2.Draw("colzsame")
 
+        ROOT.gPad.SetLogz(1 if "_hi" in h2.GetName() else 0)
         canvas.SaveAs("output/"+canvas.GetName()+".pdf")
         
 def fatal(message):
@@ -79,7 +87,7 @@ def fatal(message):
 def style(hist, ndiv=505):
     ops = options()
     hist.SetStats(0)
-    hist.SetMinimum(0)
+    hist.SetMinimum(0 if not "_hi" in hist.GetName() else 2e-6)
     # hist.SetMaximum()
     hist.GetXaxis().SetNdivisions(ndiv)
     hist.GetXaxis().SetTitleSize(0.05)
