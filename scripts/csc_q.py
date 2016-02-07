@@ -67,6 +67,7 @@ def main():
 
     for h2 in h2s:
 
+        ROOT.TH1.StatOverflows(ROOT.kTRUE)
         integral = h2.Integral(0, h2.GetNbinsX()+1, 0, h2.GetNbinsY()+1)
         h2.Scale(1/integral)
 
