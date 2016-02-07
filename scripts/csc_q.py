@@ -10,7 +10,7 @@ ROOT.gStyle.SetPadTickY(1)
 ROOT.gStyle.SetPadTopMargin(0.06)
 ROOT.gStyle.SetPadBottomMargin(0.15)
 ROOT.gStyle.SetPadLeftMargin(0.18)
-ROOT.gStyle.SetPadRightMargin(0.16)
+ROOT.gStyle.SetPadRightMargin(0.20)
 
 def options():
     parser = argparse.ArgumentParser()
@@ -38,8 +38,8 @@ def main():
     xtitle_l = "inst. lumi. [e^{33} cm^{-2} s^{-1} ]"
     xbins    = 30
 
-    r_vs_strips = ROOT.TH2F("r_vs_strips", ";%s;%s;" % (xtitle_r, ytitle), 100,  800, 2200, 3*xbins, 0.5, xbins+0.5)
-    l_vs_strips = ROOT.TH2F("l_vs_strips", ";%s;%s;" % (xtitle_l, ytitle), 100,  3.0,  5.5, 3*xbins, 0.5, xbins+0.5)
+    r_vs_strips = ROOT.TH2F("r_vs_strips", ";%s;%s;" % (xtitle_r, ytitle), 100,  800, 2200, xbins, 0.5, xbins+0.5)
+    l_vs_strips = ROOT.TH2F("l_vs_strips", ";%s;%s;" % (xtitle_l, ytitle), 100,  3.0,  5.5, xbins, 0.5, xbins+0.5)
     
     h2s = [minlr_vs_max_lo, 
            minlr_vs_max_hi,
@@ -49,18 +49,21 @@ def main():
            l_vs_strips,
            ]
 
-    ch.Draw("csc_chamber_cluster_qright/1000:csc_chamber_cluster_qleft/1000 >> left_vs_right_lo", "", "goff")
-    ch.Draw("csc_chamber_cluster_qright/1000:csc_chamber_cluster_qleft/1000 >> left_vs_right_hi", "", "goff")
+    ch.Draw("csc_chamber_cluster_qright/1000:csc_chamber_cluster_qleft/1000 >> left_vs_right_lo", "prescale_HLT", "goff")
+    ch.Draw("csc_chamber_cluster_qright/1000:csc_chamber_cluster_qleft/1000 >> left_vs_right_hi", "prescale_HLT", "goff")
 
-    ch.Draw("csc_chamber_cluster_qmax/1000:min(csc_chamber_cluster_qleft, csc_chamber_cluster_qright)/1000 >> minlr_vs_max_lo", "", "goff")
-    ch.Draw("csc_chamber_cluster_qmax/1000:min(csc_chamber_cluster_qleft, csc_chamber_cluster_qright)/1000 >> minlr_vs_max_hi", "", "goff")
+    ch.Draw("csc_chamber_cluster_qmax/1000:min(csc_chamber_cluster_qleft, csc_chamber_cluster_qright)/1000 >> minlr_vs_max_lo", "prescale_HLT", "goff")
+    ch.Draw("csc_chamber_cluster_qmax/1000:min(csc_chamber_cluster_qleft, csc_chamber_cluster_qright)/1000 >> minlr_vs_max_hi", "prescale_HLT", "goff")
 
-    ch.Draw("csc_chamber_cluster_strips:csc_chamber_cluster_r      >> r_vs_strips", "", "goff")
-    ch.Draw("csc_chamber_cluster_strips:lbAverageLuminosity/1000.0 >> l_vs_strips", "", "goff")
+    ch.Draw("csc_chamber_cluster_strips:csc_chamber_cluster_r      >> r_vs_strips", "prescale_HLT", "goff")
+    ch.Draw("csc_chamber_cluster_strips:lbAverageLuminosity/1000.0 >> l_vs_strips", "prescale_HLT", "goff")
 
     for h2 in h2s:
 
         style(h2)
+        
+        integral = h2.Integral(0, h2.GetNbinsX()+1, 0, h2.GetNbinsY()+1)
+        h2.Scale(1/integral)
 
         name = "csc_q_"+h2.GetName()
         canvas = ROOT.TCanvas(name, name, 800, 800)
