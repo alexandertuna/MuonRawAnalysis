@@ -28,10 +28,10 @@ def main():
         
     colz()
 
-    left_vs_right_lo = ROOT.TH2F("left_vs_right_lo", ";q(left);q(right);"                  , 400,  -120,  280, 400,  -120,  280)
-    left_vs_right_hi = ROOT.TH2F("left_vs_right_hi", ";q(left);q(right);"                  , 400,  -600, 3400, 400,  -600, 3400)
-    minlr_vs_max_lo  = ROOT.TH2F("minlr_vs_max_lo", ";minimum of q(left), q(right);q(max);", 400,   -40,  120, 400, 0,  400)
-    minlr_vs_max_hi  = ROOT.TH2F("minlr_vs_max_hi", ";minimum of q(left), q(right);q(max);", 400,  -600, 3000, 400, 0, 3600)
+    left_vs_right_lo = ROOT.TH2F("left_vs_right_lo", ";q(left);q(right);"                  , 200,  -120,  280, 200,  -120,  280)
+    left_vs_right_hi = ROOT.TH2F("left_vs_right_hi", ";q(left);q(right);"                  , 200,  -600, 3400, 200,  -600, 3400)
+    minlr_vs_max_lo  = ROOT.TH2F("minlr_vs_max_lo", ";minimum of q(left), q(right);q(max);", 200,   -40,  120, 200, 0,  400)
+    minlr_vs_max_hi  = ROOT.TH2F("minlr_vs_max_hi", ";minimum of q(left), q(right);q(max);", 200,  -600, 3000, 200, 0, 3600)
 
     ytitle   = "N(strips)"
     xtitle_r = "r [mm]"
