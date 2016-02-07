@@ -77,6 +77,15 @@ def main():
         canvas.Draw()
         h2.Draw("colzsame")
 
+        if "strips_lo" in h2.GetName():
+            profile = h2.ProfileX(h2.GetName()+"pfx", 1, -1, "")
+            profile.SetLineColor(ROOT.kGreen)
+            profile.SetMarkerColor(ROOT.kGreen)
+            profile.SetMarkerStyle(20)
+            profile.SetMarkerSize(0.7)
+            profile.Draw("pesame")
+
+        ROOT.gPad.RedrawAxis()
         ROOT.gPad.SetLogz(1 if "_hi" in h2.GetName() else 0)
         canvas.SaveAs("output/"+canvas.GetName()+".pdf")
         
