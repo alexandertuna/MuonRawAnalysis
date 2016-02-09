@@ -4,8 +4,8 @@ area  = ROOT.TFile.Open("area.root")
 hists = ROOT.TFile.Open("histograms.root")
 
 evts     = hists.Get("00284285/evts_00284285").GetBinContent(1)
-counts_L = hists.Get("00284285/hits_raw_vs_region_L_00284285")
-counts_S = hists.Get("00284285/hits_raw_vs_region_S_00284285")
+counts_L = hists.Get("00284285/hits_adc_vs_region_L_00284285")
+counts_S = hists.Get("00284285/hits_adc_vs_region_S_00284285")
 
 area_L = area.Get("area_vs_region_L")
 area_S = area.Get("area_vs_region_S")
