@@ -20,6 +20,7 @@ import ROOT
 import rootlogon
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetPadBottomMargin(0.12)
+ROOT.gErrorIgnoreLevel = ROOT.kWarning
 
 livetime_csc = 140e-9
 livetime_mdt = 1300e-9
@@ -27,9 +28,15 @@ livetime_mdt = 1300e-9
 def options():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output",  help="Output directory for plots.")
+    parser.add_argument("--hits",    help="Type of hits to use: raw or adc")
     return parser.parse_args()
 
 def main():
+
+    ops = options()
+    if not ops.output                : ops.output = "output"
+    if not os.path.isdir(ops.output) : os.makedirs(ops.output)
+    if not ops.hits in ["raw", "adc"]: fatal("Please give --hits as raw or adc")
 
     runs = [
         "00278880",
@@ -70,8 +77,9 @@ def main():
     
     for perbc in [False]:
 #        plots_vs_lumi(runs, perbc, rate=True, extrapolate=False)
-#        plots_vs_r(runs)
-        plots_vs_region(runs, rate=True, logz=True)
+#        plots_vs_r(runs, layer="EI")
+        plots_vs_r(runs, layer="EM")
+#        plots_vs_region(runs, rate=True, logz=True)
 #     plots_vs_bcid(runs)
 #     plots_vs_lumi_vs_r(runs)
 
@@ -95,7 +103,7 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
     hists  = {}
     graphs = {}
     funcs  = {}
-    template = "hits_raw_vs_lumi_vs_evts_%s_%s"
+    template = "hits_%s_vs_lumi_vs_evts_%s_%s"
     if perbc:
         template = template.replace("lumi", "mu")
 
@@ -121,7 +129,7 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
 
         for run in runs:
 
-            name = template % (region, run)
+            name = template % (ops.hits, region, run)
 
             canvas = ROOT.TCanvas(name, name, 800, 800)
             canvas.Draw()
@@ -176,7 +184,7 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
         ROOT.gStyle.SetPadRightMargin(0.06)
         ROOT.gStyle.SetPadBottomMargin(0.12)
 
-        name = template % (region, "overlay")
+        name = template % (ops.hits, region, "overlay")
         canvas = ROOT.TCanvas(name, name, 800, 800)
         canvas.Draw()
 
@@ -189,7 +197,7 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
             legend.SetNColumns(2)
 
         for run in runs:
-            name = (template % (region, run)) + "_pfx"
+            name = (template % (ops.hits, region, run)) + "_pfx"
             hists[name].GetXaxis().SetRangeUser(*rangex)
             hists[name].GetXaxis().SetNdivisions(ndiv)
 
@@ -273,13 +281,15 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
         canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
 
 
-def plots_vs_r(runs):
+def plots_vs_r(runs, layer):
 
     ops = options()
     if not ops.output:
         ops.output = "output"
     if not os.path.isdir(ops.output): 
         os.makedirs(ops.output)
+    if not layer in ["EI", "EM"]:
+        fatal("Need layer to be EI or EM")
     
     ROOT.gStyle.SetPadRightMargin(0.06)
 
@@ -292,15 +302,16 @@ def plots_vs_r(runs):
 
     # area vs r
     input_area = ROOT.TFile.Open("area.root")
-    area_L = input_area.Get("area_vs_r_L")
-    area_S = input_area.Get("area_vs_r_S")
+    area_L = input_area.Get("area_vs_r_%sL" % layer)
+    area_S = input_area.Get("area_vs_r_%sS" % layer)
 
     for hist in [area_L, area_S]:
         hist.Rebin(rebin)
-        style_vs_r(hist)
+        style_vs_r(hist, layer)
         draw_vs_r(hist, ops.output)
 
-    sectors = ["L", "S", 
+    sectors = [layer+"L",
+               layer+"S", 
                ]
 
     # hits vs r
@@ -311,13 +322,12 @@ def plots_vs_r(runs):
 
         for sector in sectors:
 
-            name = "hits_raw_vs_r_%s_%s" % (sector, run)
-            # name = "hits_adc_vs_r_%s_%s" % (sector, run)
+            name = "hits_%s_vs_r_%s_%s" % (ops.hits, sector, run)
             hists[name] = input.Get(os.path.join(run, name))
             if not hists[name]:
                 fatal("Could not retrieve %s" % (os.path.join(run, name)))
             hists[name].Rebin(rebin)
-            style_vs_r(hists[name])
+            style_vs_r(hists[name], layer)
             for bin in xrange(0, hists[name].GetNbinsX()+1):
                 hists[name].SetBinError(bin, 0)
             # draw_vs_r(hists[name], ops.output)
@@ -328,7 +338,7 @@ def plots_vs_r(runs):
             for bin in xrange(0, denom.GetNbinsX()+1):
                 radius   = denom.GetBinCenter(bin)
                 area     = denom.GetBinContent(bin)
-                livetime = livetime_csc if radius < boundary else livetime_mdt
+                livetime = livetime_csc if (radius < boundary and layer=="EI") else livetime_mdt
                 denom.SetBinContent(bin, entries * area * livetime)
 
             name = numer.GetName().replace("hits_", "rate_")
@@ -337,22 +347,33 @@ def plots_vs_r(runs):
             hists[name].Divide(numer, denom)
             hists[name].SetName(name)
 
-            style_vs_r(hists[name])
+            style_vs_r(hists[name], layer)
             hists[name].GetYaxis().SetTitle(hists[name].GetYaxis().GetTitle().replace("hits", "hit rate [ cm^{-2} s^{-1} ]"))
-            hists[name].SetMaximum(950)
+            hists[name].SetMaximum(950 if layer=="EI" else 45)
 
-            name = "rate_raw_vs_r_%s_%s" % (sector, run)
-            # name = "rate_adc_vs_r_%s_%s" % (sector, run)
+            name = "rate_%s_vs_r_%s_%s" % (ops.hits, sector, run)
             canvas = ROOT.TCanvas(name, name, 800, 800)
             canvas.Draw()
         
             hists[name].Draw("psame")
+            
+            if layer=="EI":
+                exponential_csc = ROOT.TF1("fit_csc_"+name, "expo(0)",  950, 2000)
+                exponential_mdt = ROOT.TF1("fit_mdt_"+name, "expo(0)", 2050, 4400)
+                expos = [exponential_csc, exponential_mdt]
+            if layer=="EM":
+                edge = 3500 if "L" in sector else 3700
+                xhi  = 5400 if "L" in sector else 5650
+                exponential_em1 = ROOT.TF1("fit_em1_"+name, "expo(0)", 1750, edge-50)
+                exponential_em2 = ROOT.TF1("fit_em2_"+name, "expo(0)", edge, xhi)
+                expos = [exponential_em1, exponential_em2]
 
-            exponential_csc = ROOT.TF1("fit_csc_"+name,"expo(0)",  950, 2000)
-            exponential_mdt = ROOT.TF1("fit_mdt_"+name,"expo(0)", 2050, 4400)
-            for expo in [exponential_csc,
-                         exponential_mdt,
-                         ]:
+                #xlo = 1800
+                #xhi = 5400 if "L" in sector else 5650
+                #exponential_em = ROOT.TF1("fit_em_"+name, "expo(0)", xlo, xhi)
+                #expos = [exponential_em]
+
+            for expo in expos:
                 expo.SetFillStyle(1001)
                 expo.SetFillColor(18)
                 expo.SetLineColor(ROOT.kBlack)
@@ -369,7 +390,13 @@ def plots_vs_r(runs):
                     line.SetLineWidth(2)
                     line.SetLineStyle(1)
                     line.Draw()
-                    
+
+            for expo in expos:
+                # exp([0] + [1]*x)
+                # parameter in meters [m]
+                pass # print "%s: exp(%.3f + %.3f*x)" % (expo.GetName(), expo.GetParameter(0), expo.GetParameter(1)*1000)
+            # print
+
             hists[name].Draw("psame")
 
             xleg, yleg = 0.60, 0.66
@@ -384,18 +411,18 @@ def plots_vs_r(runs):
             legend.Draw()
             draw_logos(xcoord=0.55, ycoord=0.85, run=run, fit=False)
 
-            boundary_line = ROOT.TLine(boundary, 300, boundary, 500)
-            boundary_line.Draw()
-            arrow_csc = ROOT.TArrow(boundary, 400, boundary-350, 400, 0.01, "|>")
-            arrow_mdt = ROOT.TArrow(boundary, 350, boundary+350, 350, 0.01, "|>")
-            for arrow in [arrow_csc, arrow_mdt]:
-                arrow.Draw()
-            blurb_csc = ROOT.TLatex(boundary-280, 405, "CSC")
-            blurb_mdt = ROOT.TLatex(boundary+050, 355, "MDT")
-            for blurb in [blurb_csc, blurb_mdt]:
-                blurb.SetTextSize(0.025)
-                blurb.Draw()
-
+            if layer=="EI":
+                boundary_line = ROOT.TLine(boundary, 300, boundary, 500)
+                boundary_line.Draw()
+                arrow_csc = ROOT.TArrow(boundary, 400, boundary-350, 400, 0.01, "|>")
+                arrow_mdt = ROOT.TArrow(boundary, 350, boundary+350, 350, 0.01, "|>")
+                for arrow in [arrow_csc, arrow_mdt]:
+                    arrow.Draw()
+                blurb_csc = ROOT.TLatex(boundary-280, 405, "CSC")
+                blurb_mdt = ROOT.TLatex(boundary+050, 355, "MDT")
+                for blurb in [blurb_csc, blurb_mdt]:
+                    blurb.SetTextSize(0.025)
+                    blurb.Draw()
 
             ROOT.gPad.RedrawAxis()
             canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
@@ -489,7 +516,7 @@ def plots_vs_region(runs, rate=True, logz=False):
             name = "evts_%s" % (run)
             entries = input.Get(os.path.join(run, name)).GetBinContent(1)
             
-            name = "hits_raw_vs_region_%s_%s" % (sector, run)
+            name = "hits_%s_vs_region_%s_%s" % (ops.hits, sector, run)
             hists[name] = input.Get(os.path.join(run, name))
             
             hists[name].GetXaxis().SetTitle("#eta station")
@@ -521,7 +548,7 @@ def plots_vs_region(runs, rate=True, logz=False):
                 hists[name].Divide(numer, denom)
                 hists[name].SetName(name)
                 hists[name].GetZaxis().SetTitle(ytitle(name))
-                hists[name].SetMinimum(1)
+                hists[name].SetMinimum(0.9)
                 hists[name].SetMaximum(409)
 
             canvas = ROOT.TCanvas(name, name, 800, 800)
@@ -580,7 +607,7 @@ def plots_vs_lumi_vs_r(runs):
 
         for sector in sectors:
 
-            name = "hits_raw_vs_lumi_vs_r_%s_%s" % (sector, run)
+            name = "hits_%s_vs_lumi_vs_r_%s_%s" % (ops.hits, sector, run)
             hists[name] = input.Get(os.path.join(run, name))
             if not hists[name]:
                 fatal("Could not retrieve %s" % (os.path.join(run, name)))
@@ -617,7 +644,7 @@ def plots_vs_lumi_vs_r(runs):
                 for ybin in xrange(0, hists[name].GetNbinsY()+1):
                     hists[name].SetBinError(xbin, ybin, 0)
 
-            name = "rate_raw_vs_lumi_vs_r_%s_%s" % (sector, run)
+            name = "rate_%s_vs_lumi_vs_r_%s_%s" % (ops.hits, sector, run)
             canvas = ROOT.TCanvas(name, name, 800, 800)
             canvas.Draw()
         
@@ -634,13 +661,15 @@ def plots_vs_lumi_vs_r(runs):
             canvas.SaveAs(os.path.join(ops.output, canvas.GetName()+".pdf"))
             
 
-def style_vs_r(hist, ndiv=505):
+def style_vs_r(hist, layer, ndiv=505):
+    xlo  = 800  if layer=="EI" else 1400
+    xhi  = 4500 if layer=="EI" else 6000
     name = hist.GetName()
     hist.SetMarkerColor(ROOT.kAzure+1 if "L" in name else ROOT.kRed)
     hist.SetMarkerStyle(20)
     hist.SetMarkerSize(0.9)
     hist.GetXaxis().SetNdivisions(ndiv)
-    hist.GetXaxis().SetRangeUser(800, 4500)
+    hist.GetXaxis().SetRangeUser(xlo, xhi)
     hist.GetXaxis().SetTitle(xtitle(name))
     hist.GetYaxis().SetTitle(ytitle(name))
     hist.GetXaxis().SetTitleSize(0.05)
