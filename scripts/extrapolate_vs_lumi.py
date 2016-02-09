@@ -17,6 +17,7 @@ def options():
     parser = argparse.ArgumentParser()
     parser.add_argument("--bunches",  help="Number of bunches. Must be 2808 or 3564.")
     parser.add_argument("--lines",    help="Draw guiding lines", action="store_true")
+    parser.add_argument("--hits",     help="Type of hits to use: raw or adc")
     return parser.parse_args()
 
 def main():
@@ -24,6 +25,8 @@ def main():
     ops = options()
     if not ops.bunches in ["2808", "3564"]: 
         fatal("Please give --bunches as 2808 (Run 3) or 3564 (HL-LHC)")
+    if not ops.hits in ["raw", "adc"]:
+        fatal("Please give --hits as raw or adc")
 
     xlo = 0.1
     xhi = 2.8 if ops.bunches=="2808" else 9.9
@@ -33,7 +36,7 @@ def main():
     dummy = ROOT.TH1F("dummy", ";%s;%s" % (yaxis, xaxis), 1, xlo, xhi)
     style(dummy)
 
-    name = "extrapolate_vs_lumi_%s" % (ops.bunches)
+    name = "extrapolate_vs_lumi_%s_%s" % (ops.hits, ops.bunches)
     canvas = ROOT.TCanvas(name, name, 800, 800)
     canvas.Draw()
     dummy.Draw("same")
@@ -47,7 +50,7 @@ def main():
                  "EMS1",
                  ]:
         fit[name] = ROOT.TF1("fit_"+name, "[0]*(x) + [1]", xlo, xhi)
-        slope, offset = slope_offset(name, int(ops.bunches))
+        slope, offset = slope_offset(name, int(ops.bunches), ops.hits)
         fit[name].SetParameter(0, slope*10)
         fit[name].SetParameter(1, offset)
         fit[name].SetLineColor(color(name))
@@ -105,29 +108,43 @@ def main():
         logo.SetNDC()
         logo.Draw()
  
-    canvas.SaveAs(canvas.GetName()+".pdf")
+    canvas.SaveAs("output/"+canvas.GetName()+".pdf")
         
 def fatal(message):
     import sys
     sys.exit("Error in %s: %s" % (__file__, message))
 
-def slope_offset(region, bunches=2808):
+def slope_offset(region, bunches, hits):
     # NB: slope in units of e33.
-    if bunches == 2808:
-        if region == "CSS1": return (81.143, 0)
+    if bunches == 2808 and hits=="raw":
         if region == "CSL1": return (79.872, 0)
-        if region == "EIS1": return (17.793, 0)
+        if region == "CSS1": return (80.470, 0)
         if region == "EIL1": return (18.872, 0)
-        if region == "EMS1": return ( 5.977, 0)
+        if region == "EIS1": return (17.793, 0)
         if region == "EML1": return ( 4.577, 0)
-    if bunches == 3564:
-        if region == "CSS1": return (73.418, 0)
+        if region == "EMS1": return ( 5.977, 0)
+    if bunches == 3564 and hits=="raw":
         if region == "CSL1": return (72.360, 0)
-        if region == "EIS1": return (16.243, 0)
+        if region == "CSS1": return (73.418, 0)
         if region == "EIL1": return (16.992, 0)
-        if region == "EMS1": return ( 5.307, 0)
+        if region == "EIS1": return (16.243, 0)
         if region == "EML1": return ( 4.104, 0)
-    fatal("No slope, offset for %s, %s bunches" % (region, bunches))
+        if region == "EMS1": return ( 5.307, 0)
+    if bunches == 2808 and hits=="adc":
+        if region == "CSL1": return (69.699, 0)
+        if region == "CSS1": return (70.856, 0)
+        if region == "EIL1": return (16.044, 0)
+        if region == "EIS1": return (15.180, 0)
+        if region == "EML1": return ( 3.861, 0)
+        if region == "EMS1": return ( 5.006, 0)
+    if bunches == 3564 and hits=="adc":
+        if region == "CSL1": return (62.852, 0)
+        if region == "CSS1": return (63.995, 0)
+        if region == "EIL1": return (14.388, 0)
+        if region == "EIS1": return (13.822, 0)
+        if region == "EML1": return ( 3.445, 0)
+        if region == "EMS1": return ( 4.413, 0)
+    fatal("No slope, offset for %s, %s bunches, %s hits" % (region, bunches, hits))
 
 def style(hist, ndiv=505):
     ops = options()
