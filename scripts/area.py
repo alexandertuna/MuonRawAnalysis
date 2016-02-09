@@ -9,7 +9,8 @@ def main():
     hists = []
 
     hists += area_vs_region()
-    hists += area_vs_r()
+    hists += area_vs_r("EI")
+    hists += area_vs_r("EM")
 
     output = ROOT.TFile.Open("area.root", "recreate")
     for hist in hists:
@@ -49,32 +50,41 @@ def area_vs_region():
 
     return hists
 
-def area_vs_r():
+def area_vs_r(layer):
 
     xaxis = "radius [mm]"
 
-    area_vs_r_L = ROOT.TH1F("area_vs_r_L", ";%s;%s;" % (xaxis, "area: L [cm^{2}]"), 500, 0, 5200)
-    area_vs_r_S = ROOT.TH1F("area_vs_r_S", ";%s;%s;" % (xaxis, "area: S [cm^{2}]"), 500, 0, 5440)
-    hists = [area_vs_r_L, area_vs_r_S]
-
-    mdt_chambers, mdt_radii, mdt_areas, mdt_timings = geometry_mdt_tubes_EI()
+    mdt_chambers, mdt_radii, mdt_areas, mdt_timings = geometry_mdt_tubes(layer)
     csc_chambers, csc_radii, csc_areas, csc_timings = geometry_csc_strips()
 
-    # mdt geometry
-    for chamber, radius, area, timing in zip(mdt_chambers, mdt_radii, mdt_areas, mdt_timings):
+    if layer == "EI":
 
-        if   "EIL1" in chamber or "EIL2" in chamber: area_vs_r_L.Fill(radius, area)
-        elif "EIS1" in chamber or "EIS2" in chamber: area_vs_r_S.Fill(radius, area)
-        else:
-            continue
+        area_vs_r_EIL = ROOT.TH1F("area_vs_r_EIL", ";%s;%s;" % (xaxis, "area: L [cm^{2}]"), 500, 0, 5200)
+        area_vs_r_EIS = ROOT.TH1F("area_vs_r_EIS", ";%s;%s;" % (xaxis, "area: S [cm^{2}]"), 500, 0, 5440)
+        hists = [area_vs_r_EIL, area_vs_r_EIS]
 
-    # csc geometry
-    for chamber, radius, area, timing in zip(csc_chambers, csc_radii, csc_areas, csc_timings):
+        for chamber, radius, area, timing in zip(mdt_chambers, mdt_radii, mdt_areas, mdt_timings):
+            if   "EIL1" in chamber or "EIL2" in chamber: area_vs_r_EIL.Fill(radius, area)
+            elif "EIS1" in chamber or "EIS2" in chamber: area_vs_r_EIS.Fill(radius, area)
+            else:
+                continue
+        for chamber, radius, area, timing in zip(csc_chambers, csc_radii, csc_areas, csc_timings):
+            if   "CSL" in chamber: area_vs_r_EIL.Fill(radius, area)
+            elif "CSS" in chamber: area_vs_r_EIS.Fill(radius, area)
+            else:
+                continue
 
-        if   "CSL" in chamber: area_vs_r_L.Fill(radius, area)
-        elif "CSS" in chamber: area_vs_r_S.Fill(radius, area)
-        else:
-            continue
+    if layer == "EM":
+
+        area_vs_r_EML = ROOT.TH1F("area_vs_r_EML", ";%s;%s;" % (xaxis, "area: L [cm^{2}]"), 450, 1500, 6000)
+        area_vs_r_EMS = ROOT.TH1F("area_vs_r_EMS", ";%s;%s;" % (xaxis, "area: S [cm^{2}]"), 450, 1500, 6000)
+        hists = [area_vs_r_EML, area_vs_r_EMS]
+
+        for chamber, radius, area, timing in zip(mdt_chambers, mdt_radii, mdt_areas, mdt_timings):
+            if   "EML1" in chamber or "EML2" in chamber: area_vs_r_EML.Fill(radius, area)
+            elif "EMS1" in chamber or "EMS2" in chamber: area_vs_r_EMS.Fill(radius, area)
+            else:
+                continue
 
     # turn off uncertainties
     for hist in hists:
@@ -105,12 +115,12 @@ def geometry_all_chambers():
 
     return chambers, areas
 
-def geometry_mdt_tubes_EI():
+def geometry_mdt_tubes(layer):
 
     livetime    = 1300e-9
     mm2_to_cm2  = (1/10.0)*(1/10.0)
     muonrawhits = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    geometry    = os.path.join(muonrawhits, "data/geometry/mdt_tubes_EI.txt")
+    geometry    = os.path.join(muonrawhits, "data/geometry/mdt_tubes_%s.txt" % (layer))
     geometry    = geometry.replace("MuonRawAnalysis", "MuonRawHits")
 
     chambers = []
