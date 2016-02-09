@@ -1,3 +1,4 @@
+import argparse
 import array
 import sys
 
@@ -11,6 +12,15 @@ ROOT.gStyle.SetPadTopMargin(0.06)
 ROOT.gStyle.SetPadBottomMargin(0.12)
 ROOT.gStyle.SetPadLeftMargin(0.18)
 ROOT.gStyle.SetPadRightMargin(0.06)
+
+def options():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--hits", help="Type of hits to use: raw or adc", default=None)
+    return parser.parse_args()
+ops = options()
+
+if ops.hits not in ["raw", "adc"]:
+    sys.exit("Error: please give --hits to be raw or adc")
 
 logy = False
 
@@ -34,7 +44,7 @@ for region in regions:
     bunches[region] = []
     slope[  region] = []
 
-for line in open("slope_vs_bunches.txt").readlines():
+for line in open("slope_vs_bunches_%s.txt" % ops.hits).readlines():
 
     line = line.strip()
     if not line:             continue
@@ -76,7 +86,7 @@ for region in graph:
     style(graph[region], region)
     multi.Add(graph[region], "PZ")
 
-name = "slope_vs_bunches"
+name = "slope_vs_bunches_%s" % (ops.hits)
 canvas = ROOT.TCanvas(name, name, 800, 800)
 canvas.Draw()
 
@@ -117,7 +127,7 @@ for region in sorted(regions):
     slope_run3_up  = fit[region].GetParameter(0) + fit[region].GetParError(0) + (fit[region].GetParameter(1) + fit[region].GetParError(1))/bunches_run3
     slope_hllhc_up = fit[region].GetParameter(0) + fit[region].GetParError(0) + (fit[region].GetParameter(1) + fit[region].GetParError(1))/bunches_hllhc
 
-    print " %7s %7.3f +/- %7.3f | %10.1f +/- %10.1f | %10.1f %10.1f | %10.1f %10.1f" % (region,
+    print " %7s %7.3f +/- %7.3f | %10.2f +/- %10.2f | %10.3f %10.3f | %10.2f %10.2f" % (region,
                                                                                         fit[region].GetParameter(0),
                                                                                         fit[region].GetParError(0),
                                                                                         fit[region].GetParameter(1),
@@ -161,6 +171,6 @@ for reg in regions:
 if logy:
     ROOT.gPad.SetLogy()
 
-canvas.SaveAs("%s_%s.%s" % (canvas.GetName(), "log" if logy else "lin", "pdf"))
+canvas.SaveAs("output/%s_%s.%s" % (canvas.GetName(), "log" if logy else "lin", "pdf"))
 
 

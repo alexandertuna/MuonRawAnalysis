@@ -1,0 +1,83 @@
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00278880_pfx   00278880   447   56.61150    1.42484
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00279169_pfx   00279169   733   37.51435    3.78775
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00279685_pfx   00279685  1021   31.24724    4.23119
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00280464_pfx   00280464  1309   29.70393   -8.96621
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00280862_pfx   00280862  1453   23.39744    6.54556
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00281143_pfx   00281143  1596   21.20903    5.28194
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00281411_pfx   00281411  1813   17.83345    7.71358
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00282992_pfx   00282992  1813   19.28152    7.11768
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00283429_pfx   00283429  2029   18.42260    4.09738
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00284213_pfx   00284213  2232   17.91548    3.32101
+hits_adc_vs_lumi_vs_evts_mdt_EIL1_00284285_pfx   00284285  2232   18.11702    3.01729
+
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00278880_pfx   00278880   447   48.73183    1.57584
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00279169_pfx   00279169   733   33.23819    3.14674
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00279685_pfx   00279685  1021   27.64570    4.35660
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00280464_pfx   00280464  1309   22.45381    6.94925
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00280862_pfx   00280862  1453   21.37846    6.00015
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00281143_pfx   00281143  1596   19.88057    3.84875
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00281411_pfx   00281411  1813   18.00214    6.43049
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00282992_pfx   00282992  1813   18.07158    6.15863
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00283429_pfx   00283429  2029   17.29260    3.90445
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00284213_pfx   00284213  2232   17.06158    2.65109
+hits_adc_vs_lumi_vs_evts_mdt_EIS1_00284285_pfx   00284285  2232   17.31710    1.98668
+
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00278880_pfx   00278880   447   14.23021   -0.29203
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00279169_pfx   00279169   733    9.15046    0.63786
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00279685_pfx   00279685  1021    7.71955    0.57933
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00280464_pfx   00280464  1309    6.19073    1.20090
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00280862_pfx   00280862  1453    5.74932    1.21128
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00281143_pfx   00281143  1596    5.18590    0.98425
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00281411_pfx   00281411  1813    4.73304    1.36753
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00282992_pfx   00282992  1813    4.85146    0.96835
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00283429_pfx   00283429  2029    4.53924    0.57910
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00284213_pfx   00284213  2232    4.44751    0.24083
+hits_adc_vs_lumi_vs_evts_mdt_EML1_00284285_pfx   00284285  2232    4.47993    0.22475
+
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00278880_pfx   00278880   447   19.51657    0.46486
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00279169_pfx   00279169   733   12.96314    0.75087
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00279685_pfx   00279685  1021   10.35879    1.28729
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00280464_pfx   00280464  1309    8.76268    0.58535
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00280862_pfx   00280862  1453    7.79425    1.43061
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00281143_pfx   00281143  1596    6.96395    1.08373
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00281411_pfx   00281411  1813    6.24733    1.67333
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00282992_pfx   00282992  1813    6.18124    1.96009
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00283429_pfx   00283429  2029    5.84541    0.80387
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00284213_pfx   00284213  2232    5.67543    0.46880
+hits_adc_vs_lumi_vs_evts_mdt_EMS1_00284285_pfx   00284285  2232    5.77784    0.18581
+
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00278880_pfx   00278880   447   12.69889    1.44147
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00279169_pfx   00279169   733    8.20366    2.33180
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00279685_pfx   00279685  1021    7.29860    1.63421
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00280464_pfx   00280464  1309    5.14572    4.35914
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00280862_pfx   00280862  1453    5.20367    3.05745
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00281143_pfx   00281143  1596    4.94358    2.25422
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00281411_pfx   00281411  1813    4.49035    2.88207
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00282992_pfx   00282992  1813    5.05632    0.70618
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00283429_pfx   00283429  2029    4.29890    2.10807
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00284213_pfx   00284213  2232    4.15234    2.07698
+# hits_adc_vs_lumi_vs_evts_mdt_BIS8_00284285_pfx   00284285  2232    4.19339    2.14446
+
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00278880_pfx   00278880   447  235.64400   15.94428
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00279169_pfx   00279169   733  162.74610   19.69755
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00279685_pfx   00279685  1021  140.87994   12.12691
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00280464_pfx   00280464  1309  103.24437   33.43821
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00280862_pfx   00280862  1453  104.45257    5.65521
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00281143_pfx   00281143  1596   91.30339   18.74036
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00281411_pfx   00281411  1813   91.94958  -11.88743
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00282992_pfx   00282992  1813   75.87796   37.35308
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00283429_pfx   00283429  2029   81.38952   13.78108
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00284213_pfx   00284213  2232   77.96616    5.35471
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00284285_pfx   00284285  2232   75.61676    9.29504
+
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00278880_pfx   00278880   447  236.15636   16.26413
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00279169_pfx   00279169   733  168.89311   13.71777
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00279685_pfx   00279685  1021  134.64762   11.76935
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00280464_pfx   00280464  1309  107.72786   31.45066
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00280862_pfx   00280862  1453  107.09020   19.07488
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00281143_pfx   00281143  1596   94.50445   19.35641
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00281411_pfx   00281411  1813   84.27615   32.14778
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00282992_pfx   00282992  1813   83.30169   23.26831
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00283429_pfx   00283429  2029   81.43023   26.53367
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00284213_pfx   00284213  2232   78.73392   16.54703
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00284285_pfx   00284285  2232   78.04622   16.83766
