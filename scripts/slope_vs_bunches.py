@@ -22,7 +22,7 @@ ops = options()
 if ops.hits not in ["raw", "adc"]:
     sys.exit("Error: please give --hits to be raw or adc")
 
-logy = False
+logy = True
 
 bunches_run3  = 2808
 bunches_hllhc = 3564
@@ -113,7 +113,9 @@ for line in [line_run3, line_hllhc]:
 
 print
 print " %7s %7s +/- %7s | %10s +/- %10s | %10s %10s | %10s %10s" % ("region", "[0]", " ", "[1]", " ", 
-                                                                    "slope@2808", "slope@3564", "Hz@2808", "Hz@3564")
+                                                                    "slope@2808", "slope@3564", 
+                                                                       "Hz@2808",    "Hz@3564",
+                                                                    )
 
 for region in sorted(regions):
     fit[region].SetLineColor(color(region))
