@@ -25,6 +25,9 @@ ROOT.gErrorIgnoreLevel = ROOT.kWarning
 livetime_csc = 140e-9
 livetime_mdt = 1300e-9
 
+efficiency_csc_adc = 0.789
+efficiency_mdt_adc = 1.0
+
 def options():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output",  help="Output directory for plots.")
@@ -76,10 +79,10 @@ def main():
     runs = sorted(runs)
     
     for perbc in [False]:
-#        plots_vs_lumi(runs, perbc, rate=True, extrapolate=False)
-#        plots_vs_r(runs, layer="EI")
+        plots_vs_lumi(runs, perbc, rate=True, extrapolate=False)
+        plots_vs_r(runs, layer="EI")
         plots_vs_r(runs, layer="EM")
-#        plots_vs_region(runs, rate=True, logz=True)
+        plots_vs_region(runs, rate=True, logz=True)
 #     plots_vs_bcid(runs)
 #     plots_vs_lumi_vs_r(runs)
 
@@ -167,6 +170,10 @@ def plots_vs_lumi(runs, perbc, rate, extrapolate):
                 if region == "csc_CSL1": area = sum([areas[cham] for cham in filter(lambda key:   "CSL1" in key, areas)])
                 if region == "csc_CSS1": area = sum([areas[cham] for cham in filter(lambda key:   "CSS1" in key, areas)])
                 hists[pfx].Scale(1.0 / (livetime * area))
+
+                if ops.hits=="adc":
+                    efficiency = efficiency_csc_adc if "csc" in region else efficiency_mdt_adc
+                    hists[pfx].Scale(1 / efficiency)
                 
             hists[pfx].SetLineColor(ROOT.kBlack)
             hists[pfx].SetLineWidth(3)
@@ -336,10 +343,13 @@ def plots_vs_r(runs, layer):
             denom = copy.copy(area_L if "L" in sector else area_S)
 
             for bin in xrange(0, denom.GetNbinsX()+1):
-                radius   = denom.GetBinCenter(bin)
-                area     = denom.GetBinContent(bin)
-                livetime = livetime_csc if (radius < boundary and layer=="EI") else livetime_mdt
-                denom.SetBinContent(bin, entries * area * livetime)
+                radius     = denom.GetBinCenter(bin)
+                area       = denom.GetBinContent(bin)
+                livetime   = livetime_csc       if (radius < boundary and layer=="EI") else livetime_mdt
+                efficiency = efficiency_csc_adc if (radius < boundary and layer=="EI") else efficiency_mdt_adc
+                if ops.hits=="raw":
+                    efficiency = 1.0
+                denom.SetBinContent(bin, entries * area * livetime * efficiency)
 
             name = numer.GetName().replace("hits_", "rate_")
             hists[name] = copy.copy(numer)
@@ -368,11 +378,6 @@ def plots_vs_r(runs, layer):
                 exponential_em2 = ROOT.TF1("fit_em2_"+name, "expo(0)", edge, xhi)
                 expos = [exponential_em1, exponential_em2]
 
-                #xlo = 1800
-                #xhi = 5400 if "L" in sector else 5650
-                #exponential_em = ROOT.TF1("fit_em_"+name, "expo(0)", xlo, xhi)
-                #expos = [exponential_em]
-
             for expo in expos:
                 expo.SetFillStyle(1001)
                 expo.SetFillColor(18)
@@ -394,8 +399,8 @@ def plots_vs_r(runs, layer):
             for expo in expos:
                 # exp([0] + [1]*x)
                 # parameter in meters [m]
-                pass # print "%s: exp(%.3f + %.3f*x)" % (expo.GetName(), expo.GetParameter(0), expo.GetParameter(1)*1000)
-            # print
+                print "%s: exp(%.3f + %.3f*x)" % (expo.GetName(), expo.GetParameter(0), expo.GetParameter(1)*1000)
+            print
 
             hists[name].Draw("psame")
 
