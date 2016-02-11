@@ -58,26 +58,26 @@ hits_adc_vs_lumi_vs_evts_mdt_EMS1_00284285_pfx   00284285  2232    5.77784    0.
 # hits_adc_vs_lumi_vs_evts_mdt_BIS8_00284213_pfx   00284213  2232    4.15234    2.07698
 # hits_adc_vs_lumi_vs_evts_mdt_BIS8_00284285_pfx   00284285  2232    4.19339    2.14446
 
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00278880_pfx   00278880   447  235.64400   15.94428
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00279169_pfx   00279169   733  162.74610   19.69755
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00279685_pfx   00279685  1021  140.87994   12.12691
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00280464_pfx   00280464  1309  103.24437   33.43821
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00280862_pfx   00280862  1453  104.45257    5.65521
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00281143_pfx   00281143  1596   91.30339   18.74036
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00281411_pfx   00281411  1813   91.94958  -11.88743
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00282992_pfx   00282992  1813   75.87796   37.35308
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00283429_pfx   00283429  2029   81.38952   13.78108
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00284213_pfx   00284213  2232   77.96616    5.35471
-hits_adc_vs_lumi_vs_evts_csc_CSL1_00284285_pfx   00284285  2232   75.61676    9.29504
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00278880_pfx   00278880   447  226.60904   12.80095
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00279169_pfx   00279169   733  149.49103   15.71053
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00279685_pfx   00279685  1021  115.12345   18.87737
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00280464_pfx   00280464  1309   87.80577   29.18722
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00280862_pfx   00280862  1453   87.79314    5.98536
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00281143_pfx   00281143  1596   77.70863   22.98064
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00281411_pfx   00281411  1813   76.31569    2.96610
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00282992_pfx   00282992  1813   64.46424   43.68476
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00283429_pfx   00283429  2029   68.58785   12.99323
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00284213_pfx   00284213  2232   65.01135    9.70151
+hits_adc_vs_lumi_vs_evts_csc_CSL1_00284285_pfx   00284285  2232   63.84016   11.33074
 
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00278880_pfx   00278880   447  236.15636   16.26413
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00279169_pfx   00279169   733  168.89311   13.71777
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00279685_pfx   00279685  1021  134.64762   11.76935
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00280464_pfx   00280464  1309  107.72786   31.45066
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00280862_pfx   00280862  1453  107.09020   19.07488
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00281143_pfx   00281143  1596   94.50445   19.35641
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00281411_pfx   00281411  1813   84.27615   32.14778
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00282992_pfx   00282992  1813   83.30169   23.26831
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00283429_pfx   00283429  2029   81.43023   26.53367
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00284213_pfx   00284213  2232   78.73392   16.54703
-hits_adc_vs_lumi_vs_evts_csc_CSS1_00284285_pfx   00284285  2232   78.04622   16.83766
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00278880_pfx   00278880   447  226.99083   11.73805
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00279169_pfx   00279169   733  148.80503   16.51900
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00279685_pfx   00279685  1021  117.69535   15.90479
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00280464_pfx   00280464  1309   86.40147   36.27954
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00280862_pfx   00280862  1453   85.11919   24.89397
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00281143_pfx   00281143  1596   79.50041   22.83298
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00281411_pfx   00281411  1813   70.48610   34.21355
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00282992_pfx   00282992  1813   72.07428   23.70611
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00283429_pfx   00283429  2029   67.61934   23.17490
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00284213_pfx   00284213  2232   64.32450   19.19342
+hits_adc_vs_lumi_vs_evts_csc_CSS1_00284285_pfx   00284285  2232   65.03122   16.06002
