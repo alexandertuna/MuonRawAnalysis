@@ -63,7 +63,7 @@ class MuonRawHistograms {
     std::vector<std::string> chamber_types = {"BIL", "BML", "BOL", "EIL", "EML", "EOL",
                                               "BIS", "BMS", "BOS", "EIS", "EMS", "EOS",
                                               "BEE", "BIM", "BIR", "BME", "BMF", "BOF", "BOG", 
-                                              "EEL", "EES"};
+                                              "EEL", "EES", "CSL", "CSS"};
     std::vector<std::string> chamber_sides = {"A", "B", "C"};
 
     // inputs
@@ -89,9 +89,12 @@ class MuonRawHistograms {
     std::vector<std::vector<int>>* csc_chamber_cluster_rmax        = 0; //!
     std::vector<std::vector<int>>* csc_chamber_cluster_qsum        = 0; //!
     std::vector<std::vector<int>>* csc_chamber_cluster_qmax        = 0; //!
+    std::vector<std::vector<int>>* csc_chamber_cluster_qleft       = 0; //!
+    std::vector<std::vector<int>>* csc_chamber_cluster_qright      = 0; //!
     std::vector<std::vector<int>>* csc_chamber_cluster_strips      = 0; //!
     std::vector<std::vector<int>>* csc_chamber_cluster_measuresphi = 0; //!
     std::vector<int>*              csc_chamber_cluster_n_qmax100   = 0; //!
+    std::vector<int>*              csc_chamber_cluster_n_notecho   = 0; //!
 
     // outputs
     TH1F* evts = 0;
@@ -162,36 +165,24 @@ class MuonRawHistograms {
     TH2F* hits_adc_vs_mu_vs_evts_csc_CSL1 = 0;
     TH2F* hits_adc_vs_mu_vs_evts_csc_CSS1 = 0;
 
-    TH2F* hits_raw_vs_lumi_vs_r_L = 0;
-    TH2F* hits_raw_vs_lumi_vs_r_S = 0;
+    TH2F* hits_raw_vs_lumi_vs_r_EIL = 0;
+    TH2F* hits_raw_vs_lumi_vs_r_EIS = 0;
+    TH2F* hits_raw_vs_lumi_vs_r_EML = 0;
+    TH2F* hits_raw_vs_lumi_vs_r_EMS = 0;
 
-    TH1F* hits_raw_vs_r_L = 0;
-    TH1F* hits_raw_vs_r_S = 0;
-    TH1F* hits_adc_vs_r_L = 0;
-    TH1F* hits_adc_vs_r_S = 0;
+    TH1F* hits_raw_vs_r_EIL = 0;
+    TH1F* hits_raw_vs_r_EIS = 0;
+    TH1F* hits_raw_vs_r_EML = 0;
+    TH1F* hits_raw_vs_r_EMS = 0;
+    TH1F* hits_adc_vs_r_EIL = 0;
+    TH1F* hits_adc_vs_r_EIS = 0;
+    TH1F* hits_adc_vs_r_EML = 0;
+    TH1F* hits_adc_vs_r_EMS = 0;
 
     TH2F* hits_raw_vs_region_L = 0;
     TH2F* hits_raw_vs_region_S = 0;
     TH2F* hits_adc_vs_region_L = 0;
     TH2F* hits_adc_vs_region_S = 0;
-
-    TH1F* hits_raw_vs_r_L_01 = 0;
-    TH1F* hits_raw_vs_r_L_03 = 0;
-    TH1F* hits_raw_vs_r_L_05 = 0;
-    TH1F* hits_raw_vs_r_L_07 = 0;
-    TH1F* hits_raw_vs_r_L_09 = 0;
-    TH1F* hits_raw_vs_r_L_11 = 0;
-    TH1F* hits_raw_vs_r_L_13 = 0;
-    TH1F* hits_raw_vs_r_L_15 = 0;
-
-    TH1F* hits_raw_vs_r_S_02 = 0;
-    TH1F* hits_raw_vs_r_S_04 = 0;
-    TH1F* hits_raw_vs_r_S_06 = 0;
-    TH1F* hits_raw_vs_r_S_08 = 0;
-    TH1F* hits_raw_vs_r_S_10 = 0;
-    TH1F* hits_raw_vs_r_S_12 = 0;
-    TH1F* hits_raw_vs_r_S_14 = 0;
-    TH1F* hits_raw_vs_r_S_16 = 0;
 
     std::vector<TH1F*> histograms1D;
     std::vector<TH2F*> histograms2D;
