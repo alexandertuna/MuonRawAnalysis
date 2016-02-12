@@ -46,8 +46,8 @@ int MuonRawHistograms::execute(int ents){
 
     int hits_raw_mdt_full = 0;
     int hits_adc_mdt_full = 0;
-    std::map<std::string, int> hits_raw_mdt;
-    std::map<std::string, int> hits_adc_mdt;
+    std::map<std::string, int> hits_raw;
+    std::map<std::string, int> hits_adc;
 
     int hits_raw_csc_full = 0;
     int hits_adc_csc_full = 0;
@@ -85,8 +85,8 @@ int MuonRawHistograms::execute(int ents){
         for (auto type: chamber_types)
             for (auto side: chamber_sides)
                 for (eta = 1; eta <= eta_n; ++eta){
-                    hits_raw_mdt[type + std::to_string(eta) + side] = 0;
-                    hits_adc_mdt[type + std::to_string(eta) + side] = 0;
+                    hits_raw[type + std::to_string(eta) + side] = 0;
+                    hits_adc[type + std::to_string(eta) + side] = 0;
                 }
 
         hits_adc_csc_full = 0;
@@ -104,8 +104,8 @@ int MuonRawHistograms::execute(int ents){
             hits_raw_mdt_full += chamber_hits_raw;
             hits_adc_mdt_full += chamber_hits_adc;
 
-            hits_raw_mdt[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits_raw;
-            hits_adc_mdt[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits_adc;
+            hits_raw[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits_raw;
+            hits_adc[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits_adc;
 
             if ((chamber_type=="EIL" || chamber_type=="EIS" || chamber_type=="EML" || chamber_type=="EMS") && (chamber_eta==1 || chamber_eta==2)){
                 for (hit = 0; hit < chamber_hits_raw; ++hit){
@@ -151,8 +151,8 @@ int MuonRawHistograms::execute(int ents){
             hits_raw_csc_full += chamber_hits_raw;
             hits_adc_csc_full += chamber_hits_adc;
 
-            hits_raw_mdt[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits_raw;
-            hits_adc_mdt[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits_adc;
+            hits_raw[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits_raw;
+            hits_adc[chamber_type + std::to_string(chamber_eta) + chamber_side] += chamber_hits_adc;
 
             for (hit = 0; hit < chamber_hits_raw; ++hit){
 
@@ -179,64 +179,64 @@ int MuonRawHistograms::execute(int ents){
 
         lumi = lbAverageLuminosity/1000.0;
         hits_raw_vs_lumi_vs_evts_mdt_full->Fill(lumi, hits_raw_mdt_full,                           prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_EIL1->Fill(lumi, hits_raw_mdt["EIL1A"]+hits_raw_mdt["EIL1C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_EIL2->Fill(lumi, hits_raw_mdt["EIL2A"]+hits_raw_mdt["EIL2C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_EIS1->Fill(lumi, hits_raw_mdt["EIS1A"]+hits_raw_mdt["EIS1C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_EIS2->Fill(lumi, hits_raw_mdt["EIS2A"]+hits_raw_mdt["EIS2C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_EML1->Fill(lumi, hits_raw_mdt["EML1A"]+hits_raw_mdt["EML1C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_EML2->Fill(lumi, hits_raw_mdt["EML2A"]+hits_raw_mdt["EML2C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_EMS1->Fill(lumi, hits_raw_mdt["EMS1A"]+hits_raw_mdt["EMS1C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_EMS2->Fill(lumi, hits_raw_mdt["EMS2A"]+hits_raw_mdt["EMS2C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_BIS7->Fill(lumi, hits_raw_mdt["BIS7A"]+hits_raw_mdt["BIS7C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_mdt_BIS8->Fill(lumi, hits_raw_mdt["BIS8A"]+hits_raw_mdt["BIS8C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_EIL1->Fill(lumi, hits_raw["EIL1A"]+hits_raw["EIL1C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_EIL2->Fill(lumi, hits_raw["EIL2A"]+hits_raw["EIL2C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_EIS1->Fill(lumi, hits_raw["EIS1A"]+hits_raw["EIS1C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_EIS2->Fill(lumi, hits_raw["EIS2A"]+hits_raw["EIS2C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_EML1->Fill(lumi, hits_raw["EML1A"]+hits_raw["EML1C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_EML2->Fill(lumi, hits_raw["EML2A"]+hits_raw["EML2C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_EMS1->Fill(lumi, hits_raw["EMS1A"]+hits_raw["EMS1C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_EMS2->Fill(lumi, hits_raw["EMS2A"]+hits_raw["EMS2C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_BIS7->Fill(lumi, hits_raw["BIS7A"]+hits_raw["BIS7C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_mdt_BIS8->Fill(lumi, hits_raw["BIS8A"]+hits_raw["BIS8C"], prescale_HLT);
         hits_raw_vs_lumi_vs_evts_csc_full->Fill(lumi, hits_raw_csc_full,                           prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_csc_CSL1->Fill(lumi, hits_raw_mdt["CSL1A"]+hits_raw_mdt["CSL1C"], prescale_HLT);
-        hits_raw_vs_lumi_vs_evts_csc_CSS1->Fill(lumi, hits_raw_mdt["CSS1A"]+hits_raw_mdt["CSS1C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_csc_CSL1->Fill(lumi, hits_raw["CSL1A"]+hits_raw["CSL1C"], prescale_HLT);
+        hits_raw_vs_lumi_vs_evts_csc_CSS1->Fill(lumi, hits_raw["CSS1A"]+hits_raw["CSS1C"], prescale_HLT);
 
         hits_adc_vs_lumi_vs_evts_mdt_full->Fill(lumi, hits_adc_mdt_full,                           prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_EIL1->Fill(lumi, hits_adc_mdt["EIL1A"]+hits_adc_mdt["EIL1C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_EIL2->Fill(lumi, hits_adc_mdt["EIL2A"]+hits_adc_mdt["EIL2C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_EIS1->Fill(lumi, hits_adc_mdt["EIS1A"]+hits_adc_mdt["EIS1C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_EIS2->Fill(lumi, hits_adc_mdt["EIS2A"]+hits_adc_mdt["EIS2C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_EML1->Fill(lumi, hits_adc_mdt["EML1A"]+hits_adc_mdt["EML1C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_EML2->Fill(lumi, hits_adc_mdt["EML2A"]+hits_adc_mdt["EML2C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_EMS1->Fill(lumi, hits_adc_mdt["EMS1A"]+hits_adc_mdt["EMS1C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_EMS2->Fill(lumi, hits_adc_mdt["EMS2A"]+hits_adc_mdt["EMS2C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_BIS7->Fill(lumi, hits_adc_mdt["BIS7A"]+hits_adc_mdt["BIS7C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_mdt_BIS8->Fill(lumi, hits_adc_mdt["BIS8A"]+hits_adc_mdt["BIS8C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_EIL1->Fill(lumi, hits_adc["EIL1A"]+hits_adc["EIL1C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_EIL2->Fill(lumi, hits_adc["EIL2A"]+hits_adc["EIL2C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_EIS1->Fill(lumi, hits_adc["EIS1A"]+hits_adc["EIS1C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_EIS2->Fill(lumi, hits_adc["EIS2A"]+hits_adc["EIS2C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_EML1->Fill(lumi, hits_adc["EML1A"]+hits_adc["EML1C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_EML2->Fill(lumi, hits_adc["EML2A"]+hits_adc["EML2C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_EMS1->Fill(lumi, hits_adc["EMS1A"]+hits_adc["EMS1C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_EMS2->Fill(lumi, hits_adc["EMS2A"]+hits_adc["EMS2C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_BIS7->Fill(lumi, hits_adc["BIS7A"]+hits_adc["BIS7C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_mdt_BIS8->Fill(lumi, hits_adc["BIS8A"]+hits_adc["BIS8C"], prescale_HLT);
         hits_adc_vs_lumi_vs_evts_csc_full->Fill(lumi, hits_adc_csc_full,                           prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_csc_CSL1->Fill(lumi, hits_adc_mdt["CSL1A"]+hits_adc_mdt["CSL1C"], prescale_HLT);
-        hits_adc_vs_lumi_vs_evts_csc_CSS1->Fill(lumi, hits_adc_mdt["CSS1A"]+hits_adc_mdt["CSS1C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_csc_CSL1->Fill(lumi, hits_adc["CSL1A"]+hits_adc["CSL1C"], prescale_HLT);
+        hits_adc_vs_lumi_vs_evts_csc_CSS1->Fill(lumi, hits_adc["CSS1A"]+hits_adc["CSS1C"], prescale_HLT);
 
         hits_raw_vs_mu_vs_evts_mdt_full->Fill(avgIntPerXing, hits_raw_mdt_full,                           prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_EIL1->Fill(avgIntPerXing, hits_raw_mdt["EIL1A"]+hits_raw_mdt["EIL1C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_EIL2->Fill(avgIntPerXing, hits_raw_mdt["EIL2A"]+hits_raw_mdt["EIL2C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_EIS1->Fill(avgIntPerXing, hits_raw_mdt["EIS1A"]+hits_raw_mdt["EIS1C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_EIS2->Fill(avgIntPerXing, hits_raw_mdt["EIS2A"]+hits_raw_mdt["EIS2C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_EML1->Fill(avgIntPerXing, hits_raw_mdt["EML1A"]+hits_raw_mdt["EML1C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_EML2->Fill(avgIntPerXing, hits_raw_mdt["EML2A"]+hits_raw_mdt["EML2C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_EMS1->Fill(avgIntPerXing, hits_raw_mdt["EMS1A"]+hits_raw_mdt["EMS1C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_EMS2->Fill(avgIntPerXing, hits_raw_mdt["EMS2A"]+hits_raw_mdt["EMS2C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_BIS7->Fill(avgIntPerXing, hits_raw_mdt["BIS7A"]+hits_raw_mdt["BIS7C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_mdt_BIS8->Fill(avgIntPerXing, hits_raw_mdt["BIS8A"]+hits_raw_mdt["BIS8C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_EIL1->Fill(avgIntPerXing, hits_raw["EIL1A"]+hits_raw["EIL1C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_EIL2->Fill(avgIntPerXing, hits_raw["EIL2A"]+hits_raw["EIL2C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_EIS1->Fill(avgIntPerXing, hits_raw["EIS1A"]+hits_raw["EIS1C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_EIS2->Fill(avgIntPerXing, hits_raw["EIS2A"]+hits_raw["EIS2C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_EML1->Fill(avgIntPerXing, hits_raw["EML1A"]+hits_raw["EML1C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_EML2->Fill(avgIntPerXing, hits_raw["EML2A"]+hits_raw["EML2C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_EMS1->Fill(avgIntPerXing, hits_raw["EMS1A"]+hits_raw["EMS1C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_EMS2->Fill(avgIntPerXing, hits_raw["EMS2A"]+hits_raw["EMS2C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_BIS7->Fill(avgIntPerXing, hits_raw["BIS7A"]+hits_raw["BIS7C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_mdt_BIS8->Fill(avgIntPerXing, hits_raw["BIS8A"]+hits_raw["BIS8C"], prescale_HLT);
         hits_raw_vs_mu_vs_evts_csc_full->Fill(avgIntPerXing, hits_raw_csc_full,                           prescale_HLT);
-        hits_raw_vs_mu_vs_evts_csc_CSL1->Fill(avgIntPerXing, hits_raw_mdt["CSL1A"]+hits_raw_mdt["CSL1C"], prescale_HLT);
-        hits_raw_vs_mu_vs_evts_csc_CSS1->Fill(avgIntPerXing, hits_raw_mdt["CSS1A"]+hits_raw_mdt["CSS1C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_csc_CSL1->Fill(avgIntPerXing, hits_raw["CSL1A"]+hits_raw["CSL1C"], prescale_HLT);
+        hits_raw_vs_mu_vs_evts_csc_CSS1->Fill(avgIntPerXing, hits_raw["CSS1A"]+hits_raw["CSS1C"], prescale_HLT);
 
         hits_adc_vs_mu_vs_evts_mdt_full->Fill(avgIntPerXing, hits_adc_mdt_full,                           prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_EIL1->Fill(avgIntPerXing, hits_adc_mdt["EIL1A"]+hits_adc_mdt["EIL1C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_EIL2->Fill(avgIntPerXing, hits_adc_mdt["EIL2A"]+hits_adc_mdt["EIL2C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_EIS1->Fill(avgIntPerXing, hits_adc_mdt["EIS1A"]+hits_adc_mdt["EIS1C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_EIS2->Fill(avgIntPerXing, hits_adc_mdt["EIS2A"]+hits_adc_mdt["EIS2C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_EML1->Fill(avgIntPerXing, hits_adc_mdt["EML1A"]+hits_adc_mdt["EML1C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_EML2->Fill(avgIntPerXing, hits_adc_mdt["EML2A"]+hits_adc_mdt["EML2C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_EMS1->Fill(avgIntPerXing, hits_adc_mdt["EMS1A"]+hits_adc_mdt["EMS1C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_EMS2->Fill(avgIntPerXing, hits_adc_mdt["EMS2A"]+hits_adc_mdt["EMS2C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_BIS7->Fill(avgIntPerXing, hits_adc_mdt["BIS7A"]+hits_adc_mdt["BIS7C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_mdt_BIS8->Fill(avgIntPerXing, hits_adc_mdt["BIS8A"]+hits_adc_mdt["BIS8C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_EIL1->Fill(avgIntPerXing, hits_adc["EIL1A"]+hits_adc["EIL1C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_EIL2->Fill(avgIntPerXing, hits_adc["EIL2A"]+hits_adc["EIL2C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_EIS1->Fill(avgIntPerXing, hits_adc["EIS1A"]+hits_adc["EIS1C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_EIS2->Fill(avgIntPerXing, hits_adc["EIS2A"]+hits_adc["EIS2C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_EML1->Fill(avgIntPerXing, hits_adc["EML1A"]+hits_adc["EML1C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_EML2->Fill(avgIntPerXing, hits_adc["EML2A"]+hits_adc["EML2C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_EMS1->Fill(avgIntPerXing, hits_adc["EMS1A"]+hits_adc["EMS1C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_EMS2->Fill(avgIntPerXing, hits_adc["EMS2A"]+hits_adc["EMS2C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_BIS7->Fill(avgIntPerXing, hits_adc["BIS7A"]+hits_adc["BIS7C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_mdt_BIS8->Fill(avgIntPerXing, hits_adc["BIS8A"]+hits_adc["BIS8C"], prescale_HLT);
         hits_adc_vs_mu_vs_evts_csc_full->Fill(avgIntPerXing, hits_adc_csc_full,                           prescale_HLT);
-        hits_adc_vs_mu_vs_evts_csc_CSL1->Fill(avgIntPerXing, hits_adc_mdt["CSL1A"]+hits_adc_mdt["CSL1C"], prescale_HLT);
-        hits_adc_vs_mu_vs_evts_csc_CSS1->Fill(avgIntPerXing, hits_adc_mdt["CSS1A"]+hits_adc_mdt["CSS1C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_csc_CSL1->Fill(avgIntPerXing, hits_adc["CSL1A"]+hits_adc["CSL1C"], prescale_HLT);
+        hits_adc_vs_mu_vs_evts_csc_CSS1->Fill(avgIntPerXing, hits_adc["CSS1A"]+hits_adc["CSS1C"], prescale_HLT);
 
         for (auto type: chamber_types)
             for (auto side: chamber_sides)
@@ -246,10 +246,10 @@ int MuonRawHistograms::execute(int ents){
                     chamber = type + std::to_string(eta) + side;
 
                     hist = (type.find("L") != std::string::npos) ? hits_raw_vs_region_L : hits_raw_vs_region_S;
-                    hist->Fill(eta*sign(side), ybin(type), prescale_HLT*(float)(hits_raw_mdt[chamber]));
+                    hist->Fill(eta*sign(side), ybin(type), prescale_HLT*(float)(hits_raw[chamber]));
 
                     hist = (type.find("L") != std::string::npos) ? hits_adc_vs_region_L : hits_adc_vs_region_S;
-                    hist->Fill(eta*sign(side), ybin(type), prescale_HLT*(float)(hits_adc_mdt[chamber]));
+                    hist->Fill(eta*sign(side), ybin(type), prescale_HLT*(float)(hits_adc[chamber]));
                 }
 
         evts_vs_lumi->Fill(         lumi, prescale_HLT);
