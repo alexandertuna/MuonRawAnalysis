@@ -65,6 +65,8 @@ class MuonRawHistograms {
                                               "BEE", "BIM", "BIR", "BME", "BMF", "BOF", "BOG", 
                                               "EEL", "EES", "CSL", "CSS"};
     std::vector<std::string> chamber_sides = {"A", "B", "C"};
+    std::vector<std::string> phi_sectors_L = {"01", "03", "05", "07", "09", "11", "13", "15"};
+    std::vector<std::string> phi_sectors_S = {"02", "04", "06", "08", "10", "12", "14", "16"};
 
     // inputs
     int mdt_chamber_n;
