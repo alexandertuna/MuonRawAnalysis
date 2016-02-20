@@ -6,6 +6,7 @@ import ROOT
 
 def main():
 
+    print
     hists = []
 
     hists += area_vs_region()
@@ -20,6 +21,7 @@ def main():
         output.cd()
         hist.Write()
     output.Close()
+    print
 
 def area_vs_region():
 
@@ -116,6 +118,8 @@ def geometry_all_chambers():
     chambers = []
     areas    = []
 
+    print " - retrieving geometry from %s" % (geometry)
+
     for line in open(geometry).readlines():
         line = line.strip()
         if not line:
@@ -139,6 +143,8 @@ def geometry_mdt_tubes(layer):
     radii    = []
     areas    = []
     times    = []
+
+    print " - retrieving geometry from %s" % (geometry)
 
     for line in open(geometry).readlines():
         line = line.strip()
@@ -165,6 +171,8 @@ def geometry_csc_strips():
     radii    = []
     areas    = []
     times    = []
+
+    print " - retrieving geometry from %s" % (geometry)
 
     for line in open(geometry).readlines():
         line = line.strip()
@@ -194,7 +202,6 @@ def sign(chamber_side):
     if chamber_side == "A": return  1
     if chamber_side == "C": return -1
     return 0
-
 
 if __name__ == "__main__":
     main()
