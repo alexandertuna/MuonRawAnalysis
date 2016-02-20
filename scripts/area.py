@@ -6,17 +6,22 @@ import ROOT
 
 def main():
 
+    print
     hists = []
 
     hists += area_vs_region()
     hists += area_vs_r("EI")
     hists += area_vs_r("EM")
 
+    for phi in xrange(1, 17):
+        hists += area_vs_r("EI", "%02i" % phi)
+
     output = ROOT.TFile.Open("area.root", "recreate")
     for hist in hists:
         output.cd()
         hist.Write()
     output.Close()
+    print
 
 def area_vs_region():
 
@@ -50,39 +55,45 @@ def area_vs_region():
 
     return hists
 
-def area_vs_r(layer):
+def area_vs_r(layer, phi=""):
 
     xaxis = "radius [mm]"
 
     mdt_chambers, mdt_radii, mdt_areas, mdt_timings = geometry_mdt_tubes(layer)
     csc_chambers, csc_radii, csc_areas, csc_timings = geometry_csc_strips()
 
+    name_L = "area_vs_r_%sL" % (layer)
+    name_S = "area_vs_r_%sS" % (layer)
+    if phi:
+        name_L += "_%s" % (phi)
+        name_S += "_%s" % (phi)
+
     if layer == "EI":
 
-        area_vs_r_EIL = ROOT.TH1F("area_vs_r_EIL", ";%s;%s;" % (xaxis, "area: L [cm^{2}]"), 500, 0, 5200)
-        area_vs_r_EIS = ROOT.TH1F("area_vs_r_EIS", ";%s;%s;" % (xaxis, "area: S [cm^{2}]"), 500, 0, 5440)
+        area_vs_r_EIL = ROOT.TH1F(name_L, ";%s;%s;" % (xaxis, "area: L [cm^{2}]"), 500, 0, 5200)
+        area_vs_r_EIS = ROOT.TH1F(name_S, ";%s;%s;" % (xaxis, "area: S [cm^{2}]"), 500, 0, 5440)
         hists = [area_vs_r_EIL, area_vs_r_EIS]
 
         for chamber, radius, area, timing in zip(mdt_chambers, mdt_radii, mdt_areas, mdt_timings):
-            if   "EIL1" in chamber or "EIL2" in chamber: area_vs_r_EIL.Fill(radius, area)
-            elif "EIS1" in chamber or "EIS2" in chamber: area_vs_r_EIS.Fill(radius, area)
+            if   ("EIL1" in chamber or "EIL2" in chamber) and chamber.endswith(phi): area_vs_r_EIL.Fill(radius, area)
+            elif ("EIS1" in chamber or "EIS2" in chamber) and chamber.endswith(phi): area_vs_r_EIS.Fill(radius, area)
             else:
                 continue
         for chamber, radius, area, timing in zip(csc_chambers, csc_radii, csc_areas, csc_timings):
-            if   "CSL" in chamber: area_vs_r_EIL.Fill(radius, area)
-            elif "CSS" in chamber: area_vs_r_EIS.Fill(radius, area)
+            if   "CSL" in chamber and chamber.endswith(phi): area_vs_r_EIL.Fill(radius, area)
+            elif "CSS" in chamber and chamber.endswith(phi): area_vs_r_EIS.Fill(radius, area)
             else:
                 continue
 
     if layer == "EM":
 
-        area_vs_r_EML = ROOT.TH1F("area_vs_r_EML", ";%s;%s;" % (xaxis, "area: L [cm^{2}]"), 450, 1500, 6000)
-        area_vs_r_EMS = ROOT.TH1F("area_vs_r_EMS", ";%s;%s;" % (xaxis, "area: S [cm^{2}]"), 450, 1500, 6000)
+        area_vs_r_EML = ROOT.TH1F(name_L, ";%s;%s;" % (xaxis, "area: L [cm^{2}]"), 450, 1500, 6000)
+        area_vs_r_EMS = ROOT.TH1F(name_S, ";%s;%s;" % (xaxis, "area: S [cm^{2}]"), 450, 1500, 6000)
         hists = [area_vs_r_EML, area_vs_r_EMS]
 
         for chamber, radius, area, timing in zip(mdt_chambers, mdt_radii, mdt_areas, mdt_timings):
-            if   "EML1" in chamber or "EML2" in chamber: area_vs_r_EML.Fill(radius, area)
-            elif "EMS1" in chamber or "EMS2" in chamber: area_vs_r_EMS.Fill(radius, area)
+            if   ("EML1" in chamber or "EML2" in chamber) and chamber.endswith(phi): area_vs_r_EML.Fill(radius, area)
+            elif ("EMS1" in chamber or "EMS2" in chamber) and chamber.endswith(phi): area_vs_r_EMS.Fill(radius, area)
             else:
                 continue
 
@@ -91,6 +102,9 @@ def area_vs_r(layer):
         for bin in xrange(0, hist.GetNbinsX()+1):
             hist.SetBinError(bin, 0.0)
         ROOT.SetOwnership(hist, False)
+
+    # dont bother with empty histograms
+    hists = filter(lambda hist: hist.Integral() > 0, hists)
 
     return hists
 
@@ -103,6 +117,8 @@ def geometry_all_chambers():
 
     chambers = []
     areas    = []
+
+    print " - retrieving geometry from %s" % (geometry)
 
     for line in open(geometry).readlines():
         line = line.strip()
@@ -127,6 +143,8 @@ def geometry_mdt_tubes(layer):
     radii    = []
     areas    = []
     times    = []
+
+    print " - retrieving geometry from %s" % (geometry)
 
     for line in open(geometry).readlines():
         line = line.strip()
@@ -153,6 +171,8 @@ def geometry_csc_strips():
     radii    = []
     areas    = []
     times    = []
+
+    print " - retrieving geometry from %s" % (geometry)
 
     for line in open(geometry).readlines():
         line = line.strip()
@@ -182,7 +202,6 @@ def sign(chamber_side):
     if chamber_side == "A": return  1
     if chamber_side == "C": return -1
     return 0
-
 
 if __name__ == "__main__":
     main()
