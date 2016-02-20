@@ -34,6 +34,7 @@ class MuonRawHistograms {
 
     int ybin(std::string chamber_type);
     int sign(std::string chamber_side);
+    std::string phi_string(int phi_sector);
 
     std::string chamber = "";
     TH2F* hist = 0;
@@ -67,6 +68,7 @@ class MuonRawHistograms {
     std::vector<std::string> chamber_sides = {"A", "B", "C"};
     std::vector<std::string> phi_sectors_L = {"01", "03", "05", "07", "09", "11", "13", "15"};
     std::vector<std::string> phi_sectors_S = {"02", "04", "06", "08", "10", "12", "14", "16"};
+    std::vector<std::string> phi_sectors   = {};
 
     // inputs
     int mdt_chamber_n;
@@ -167,11 +169,6 @@ class MuonRawHistograms {
     TH2F* hits_adc_vs_mu_vs_evts_csc_CSL1 = 0;
     TH2F* hits_adc_vs_mu_vs_evts_csc_CSS1 = 0;
 
-    TH2F* hits_raw_vs_lumi_vs_r_EIL = 0;
-    TH2F* hits_raw_vs_lumi_vs_r_EIS = 0;
-    TH2F* hits_raw_vs_lumi_vs_r_EML = 0;
-    TH2F* hits_raw_vs_lumi_vs_r_EMS = 0;
-
     TH1F* hits_raw_vs_r_EIL = 0;
     TH1F* hits_raw_vs_r_EIS = 0;
     TH1F* hits_raw_vs_r_EML = 0;
@@ -180,6 +177,9 @@ class MuonRawHistograms {
     TH1F* hits_adc_vs_r_EIS = 0;
     TH1F* hits_adc_vs_r_EML = 0;
     TH1F* hits_adc_vs_r_EMS = 0;
+
+    std::map<std::string, TH1F*> hits_raw_vs_r;
+    std::map<std::string, TH1F*> hits_adc_vs_r;
 
     TH2F* hits_raw_vs_region_L = 0;
     TH2F* hits_raw_vs_region_S = 0;
