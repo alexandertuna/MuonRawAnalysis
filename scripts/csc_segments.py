@@ -1,5 +1,6 @@
 import copy
 import math
+import multiprocessing
 import os
 import sys
 import time
@@ -13,94 +14,55 @@ outdir = "csc_segments"
 if not os.path.isdir(outdir):
     os.makedirs(outdir)
 
-filepaths = ["/Users/alexandertuna/Downloads/ntuple.2016-03-25-11h54m08s.Run00284285_1.root",
-             "/Users/alexandertuna/Downloads/ntuple.2016-03-25-11h54m19s.Run00284285_2.root",
-             ]
+files = filter(lambda line: line and not line.startswith("#"), 
+               [line.strip() for line in open("csc_segments.txt")])
 
-tree = ROOT.TChain("physics")
-for path in filepaths:
-    tree.Add(path)
+def main():
 
-def main(overlay_sectors):
-    
-    if overlay_sectors:
-        ROOT.gStyle.SetPadRightMargin(0.20)
+    # farm histogramming
+    configs = []
+    for ijob, fi in enumerate(files):
+        config = {}
+        config["input"] = fi
+        config["ijob"]  = "%02i" % (ijob)
+        configs.append(config)
+
+    if len(configs) > 1:
+        npool = min(len(configs), multiprocessing.cpu_count())
+        pool = multiprocessing.Pool(npool)
+        results = pool.map(ntuple_to_hist, configs)
     else:
-        ROOT.gStyle.SetPadRightMargin(0.15)
-        ROOT.gStyle.SetPadLeftMargin(0.10)
-    
-    hist = {}
+        results = [ntuple_to_hist(config)]
 
-    title_all = "; segment #it{#phi} ; segment #it{r} [cm] ; Segments"
-    title_phi = "; segment #it{#phi} ; segment #it{r} [cm] ; < #phi-clusters on segment >"
-    title_eta = "; segment #it{#phi} ; segment #it{r} [cm] ; < #eta-clusters on segment >"
+    hist = add_histograms(results)
 
-    if overlay_sectors:
-        hist["segments_CSL"] = ROOT.TH2F("segments_CSL", title_all, 60, -0.48, 0.48, 60, 70, 250)
-        hist["segments_CSS"] = ROOT.TH2F("segments_CSS", title_all, 60, -0.48, 0.48, 60, 70, 250)
+    # divide
+    for name in hist:
+        if "segments_" in name:
+            continue
+        segments = name.replace("phiclust_", "segments_").replace("etaclust_", "segments_")
+        hist[name].Divide(hist[name], hist[segments], 1.0, 1.0, "")
 
-        hist["phiclust_CSL"] = ROOT.TH2F("phiclust_CSL", title_phi, 60, -0.48, 0.48, 60, 70, 250)
-        hist["phiclust_CSS"] = ROOT.TH2F("phiclust_CSS", title_phi, 60, -0.48, 0.48, 60, 70, 250)
+    # pretty plots
+    for name in sorted(hist):
 
-        hist["etaclust_CSL"] = ROOT.TH2F("etaclust_CSL", title_eta, 60, -0.48, 0.48, 60, 70, 250)
-        hist["etaclust_CSS"] = ROOT.TH2F("etaclust_CSS", title_eta, 60, -0.48, 0.48, 60, 70, 250)
+        overlay = "overlaid" in name
 
-    else:
-        hist["segments_CSL"] = ROOT.TH2F("segments_CSL", title_all, 120, -3.6, 3.6,  60, 70, 250)
-        hist["segments_CSS"] = ROOT.TH2F("segments_CSS", title_all, 120, -3.6, 3.6,  60, 70, 250)
+        if overlay:
+            ROOT.gStyle.SetPadRightMargin(0.20)
+            ROOT.gStyle.SetPadLeftMargin(0.16)
+        else:
+            ROOT.gStyle.SetPadRightMargin(0.15)
+            ROOT.gStyle.SetPadLeftMargin(0.10)
+            hist[name].GetYaxis().SetTitleOffset(0.9)
+            hist[name].GetZaxis().SetTitleOffset(0.9)
 
-        hist["phiclust_CSL"] = ROOT.TH2F("phiclust_CSL", title_phi, 120, -3.6, 3.6,  60, 70, 250)
-        hist["phiclust_CSS"] = ROOT.TH2F("phiclust_CSS", title_phi, 120, -3.6, 3.6,  60, 70, 250)
-
-        hist["etaclust_CSL"] = ROOT.TH2F("etaclust_CSL", title_eta, 120, -3.6, 3.6,  60, 70, 250)
-        hist["etaclust_CSS"] = ROOT.TH2F("etaclust_CSS", title_eta, 120, -3.6, 3.6,  60, 70, 250)
-
-        for hi in hist.values():
-            hi.GetYaxis().SetTitleOffset(0.9)
-            hi.GetZaxis().SetTitleOffset(0.9)
-
-    events     = tree.GetEntries()
-    start_time = time.time()
-
-    for event in xrange(events):
-
-        _ = tree.GetEntry(event)
-
-        if event > 0 and event % 500 == 0:
-            progress(start_time, event, events)
-        
-        for iseg in xrange(tree.csc_segment_n):
-
-            r    = tree.csc_segment_r[iseg] / 10.0
-            phi  = tree.csc_segment_phi[iseg]
-            type = tree.csc_segment_type[iseg]
-            sect = tree.csc_segment_phi_sector[iseg]
-            nphi = tree.csc_segment_nphiclusters[iseg]
-            neta = tree.csc_segment_netaclusters[iseg]
-
-            phi = rotate(phi, sect, type) if overlay_sectors else phi
-
-            hist["segments_%s" % (type)].Fill(phi, r)
-            hist["phiclust_%s" % (type)].Fill(phi, r, nphi)
-            hist["etaclust_%s" % (type)].Fill(phi, r, neta)
-
-    print
-    print
-
-    for cluster in ["phiclust", "etaclust"]:
-        for region in ["_CSL", "_CSS"]:
-            hist[cluster+region].Divide(hist[cluster+region], hist["segments"+region], 1.0, 1.0, "")
-
-    for name in ["segments_CSL", "segments_CSS",
-                 "phiclust_CSL", "phiclust_CSS",
-                 "etaclust_CSL", "etaclust_CSS",
-                 ]:
-        canv = ROOT.TCanvas(name, name, 800 if overlay_sectors else 1600, 800)
+        canv = ROOT.TCanvas(name, name, 800 if overlay else 1600, 800)
         canv.Draw()
         hist[name].Draw("colz,same")
         hist[name].GetXaxis().SetNdivisions(505)
 
-        if overlay_sectors:
+        if overlay:
             text = "L" if "CSL" in name else "S"
             this = ROOT.TLatex(0, 220, text)
             this.SetTextAlign(22)
@@ -119,6 +81,86 @@ def main(overlay_sectors):
 
         canv.SaveAs(os.path.join(outdir, canv.GetName()+".pdf"))
 
+def ntuple_to_hist(config):
+
+    ijob = config["ijob"]
+
+    tree = ROOT.TChain("physics")
+    tree.Add(config["input"])
+
+    hist = {}
+
+    title_all = "; segment #it{#phi} ; segment #it{r} [cm] ; Segments"
+    title_phi = "; segment #it{#phi} ; segment #it{r} [cm] ; < #phi-clusters on segment >"
+    title_eta = "; segment #it{#phi} ; segment #it{r} [cm] ; < #eta-clusters on segment >"
+
+    hist["segments_CSL_overlaid"] = ROOT.TH2F("segments_CSL_overlaid_%s" % (ijob), title_all, 60, -0.48, 0.48, 60, 70, 250)
+    hist["segments_CSS_overlaid"] = ROOT.TH2F("segments_CSS_overlaid_%s" % (ijob), title_all, 60, -0.48, 0.48, 60, 70, 250)
+    
+    hist["phiclust_CSL_overlaid"] = ROOT.TH2F("phiclust_CSL_overlaid_%s" % (ijob), title_phi, 60, -0.48, 0.48, 60, 70, 250)
+    hist["phiclust_CSS_overlaid"] = ROOT.TH2F("phiclust_CSS_overlaid_%s" % (ijob), title_phi, 60, -0.48, 0.48, 60, 70, 250)
+    
+    hist["etaclust_CSL_overlaid"] = ROOT.TH2F("etaclust_CSL_overlaid_%s" % (ijob), title_eta, 60, -0.48, 0.48, 60, 70, 250)
+    hist["etaclust_CSS_overlaid"] = ROOT.TH2F("etaclust_CSS_overlaid_%s" % (ijob), title_eta, 60, -0.48, 0.48, 60, 70, 250)
+        
+    for side in ["A", "C"]:
+        hist["segments_CSL_separate_%s" % side] = ROOT.TH2F("segments_CSL_separate_%s_%s" % (side, ijob), title_all, 120, -3.6, 3.6,  60, 70, 250)
+        hist["segments_CSS_separate_%s" % side] = ROOT.TH2F("segments_CSS_separate_%s_%s" % (side, ijob), title_all, 120, -3.6, 3.6,  60, 70, 250)
+
+        hist["phiclust_CSL_separate_%s" % side] = ROOT.TH2F("phiclust_CSL_separate_%s_%s" % (side, ijob), title_phi, 120, -3.6, 3.6,  60, 70, 250)
+        hist["phiclust_CSS_separate_%s" % side] = ROOT.TH2F("phiclust_CSS_separate_%s_%s" % (side, ijob), title_phi, 120, -3.6, 3.6,  60, 70, 250)
+
+        hist["etaclust_CSL_separate_%s" % side] = ROOT.TH2F("etaclust_CSL_separate_%s_%s" % (side, ijob), title_eta, 120, -3.6, 3.6,  60, 70, 250)
+        hist["etaclust_CSS_separate_%s" % side] = ROOT.TH2F("etaclust_CSS_separate_%s_%s" % (side, ijob), title_eta, 120, -3.6, 3.6,  60, 70, 250)
+
+    for hi in hist.values():
+        hi.Sumw2()
+        ROOT.SetOwnership(hi, False)
+
+    events     = tree.GetEntries()
+    start_time = time.time()
+
+    for event in xrange(events):
+
+        _ = tree.GetEntry(event)
+        if event > 0 and event % 500 == 0:
+            progress(start_time, event, events)
+        
+        for iseg in xrange(tree.csc_segment_n):
+
+            r    = tree.csc_segment_r[iseg] / 10.0
+            phi  = tree.csc_segment_phi[iseg]
+            type = tree.csc_segment_type[iseg]
+            side = tree.csc_segment_side[iseg]
+            sect = tree.csc_segment_phi_sector[iseg]
+            nphi = tree.csc_segment_nphiclusters[iseg]
+            neta = tree.csc_segment_netaclusters[iseg]
+
+            phi_rotated = rotate(phi, sect, type)
+
+            hist["segments_%s_overlaid" % (type)].Fill(phi_rotated, r)
+            hist["phiclust_%s_overlaid" % (type)].Fill(phi_rotated, r, nphi)
+            hist["etaclust_%s_overlaid" % (type)].Fill(phi_rotated, r, neta)
+
+            hist["segments_%s_separate_%s" % (type, side)].Fill(phi, r)
+            hist["phiclust_%s_separate_%s" % (type, side)].Fill(phi, r, nphi)
+            hist["etaclust_%s_separate_%s" % (type, side)].Fill(phi, r, neta)
+
+    print
+    return hist
+
+def add_histograms(results):
+
+    output = {}
+    for result in results:
+        for key in result:
+            if key in output:
+                output[key].Add(result[key])
+            else:
+                output[key] = copy.copy(result[key])
+                output[key].SetName(key)
+    return output
+                
 def rotate(phi, sector, type):
     
     deg_to_rad = math.pi / 180
@@ -180,6 +222,6 @@ def progress(start_time, ievent, nevents):
 
 
 if __name__ == "__main__":
-    main(overlay_sectors=True)
+    main()
 
 
