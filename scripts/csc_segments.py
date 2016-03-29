@@ -63,8 +63,8 @@ def main():
         hist[name].GetXaxis().SetNdivisions(505)
 
         if overlay:
-            text = "L" if "CSL" in name else "S"
-            this = ROOT.TLatex(0, 220, text)
+            text = "Large sectors, overlaid" if "CSL" in name else "Small sectors, overlaid"
+            this = ROOT.TLatex(0, 225, text)
             this.SetTextAlign(22)
             this.SetTextSize(0.04)
             this.Draw()
@@ -72,12 +72,19 @@ def main():
             latex = []
             sectors = [1, 3, 5, 7, 9, 11, 13, 15] if "CSL" in name else [2, 4, 6, 8, 10, 12, 14, 16]
             for sector in sectors:
-                text = "%s%02i" % ("L" if "CSL" in name else "S", sector)
-                this = ROOT.TLatex(center(sector), 220, text)
+                text = "%s%02i" % ("A" if "_A" in name else "C", sector)
+                this = ROOT.TLatex(center(sector), 225, text)
                 this.SetTextAlign(22)
-                this.SetTextSize(0.04)
+                this.SetTextSize(0.05)
                 this.Draw()
                 latex.append(this)
+
+            this = ROOT.TLatex(-3.2, 70, "Large sectors" if "CSL" in name else "Small sectors")
+            this.SetTextSize(0.05)
+            latex.append(this)
+                
+            for text in latex:
+                text.Draw()
 
         canv.SaveAs(os.path.join(outdir, canv.GetName()+".pdf"))
 
@@ -94,30 +101,30 @@ def ntuple_to_hist(config):
     title_phi = "; segment #it{#phi} ; segment #it{r} [cm] ; < #phi-clusters on segment >"
     title_eta = "; segment #it{#phi} ; segment #it{r} [cm] ; < #eta-clusters on segment >"
 
-    hist["segments_CSL_overlaid"] = ROOT.TH2F("segments_CSL_overlaid_%s" % (ijob), title_all, 60, -0.48, 0.48, 60, 70, 250)
-    hist["segments_CSS_overlaid"] = ROOT.TH2F("segments_CSS_overlaid_%s" % (ijob), title_all, 60, -0.48, 0.48, 60, 70, 250)
+    hist["segments_CSL_overlaid"] = ROOT.TH2F("segments_CSL_overlaid_%s" % (ijob), title_all, 60, -0.48, 0.48, 19, 60, 250)
+    hist["segments_CSS_overlaid"] = ROOT.TH2F("segments_CSS_overlaid_%s" % (ijob), title_all, 60, -0.48, 0.48, 19, 60, 250)
     
-    hist["phiclust_CSL_overlaid"] = ROOT.TH2F("phiclust_CSL_overlaid_%s" % (ijob), title_phi, 60, -0.48, 0.48, 60, 70, 250)
-    hist["phiclust_CSS_overlaid"] = ROOT.TH2F("phiclust_CSS_overlaid_%s" % (ijob), title_phi, 60, -0.48, 0.48, 60, 70, 250)
+    hist["phiclust_CSL_overlaid"] = ROOT.TH2F("phiclust_CSL_overlaid_%s" % (ijob), title_phi, 60, -0.48, 0.48, 19, 60, 250)
+    hist["phiclust_CSS_overlaid"] = ROOT.TH2F("phiclust_CSS_overlaid_%s" % (ijob), title_phi, 60, -0.48, 0.48, 19, 60, 250)
     
-    hist["etaclust_CSL_overlaid"] = ROOT.TH2F("etaclust_CSL_overlaid_%s" % (ijob), title_eta, 60, -0.48, 0.48, 60, 70, 250)
-    hist["etaclust_CSS_overlaid"] = ROOT.TH2F("etaclust_CSS_overlaid_%s" % (ijob), title_eta, 60, -0.48, 0.48, 60, 70, 250)
+    hist["etaclust_CSL_overlaid"] = ROOT.TH2F("etaclust_CSL_overlaid_%s" % (ijob), title_eta, 60, -0.48, 0.48, 19, 60, 250)
+    hist["etaclust_CSS_overlaid"] = ROOT.TH2F("etaclust_CSS_overlaid_%s" % (ijob), title_eta, 60, -0.48, 0.48, 19, 60, 250)
         
     for side in ["A", "C"]:
-        hist["segments_CSL_separate_%s" % side] = ROOT.TH2F("segments_CSL_separate_%s_%s" % (side, ijob), title_all, 120, -3.6, 3.6,  60, 70, 250)
-        hist["segments_CSS_separate_%s" % side] = ROOT.TH2F("segments_CSS_separate_%s_%s" % (side, ijob), title_all, 120, -3.6, 3.6,  60, 70, 250)
+        hist["segments_CSL_separate_%s" % side] = ROOT.TH2F("segments_CSL_separate_%s_%s" % (side, ijob), title_all, 120, -3.6, 3.6,  19, 60, 250)
+        hist["segments_CSS_separate_%s" % side] = ROOT.TH2F("segments_CSS_separate_%s_%s" % (side, ijob), title_all, 120, -3.6, 3.6,  19, 60, 250)
 
-        hist["phiclust_CSL_separate_%s" % side] = ROOT.TH2F("phiclust_CSL_separate_%s_%s" % (side, ijob), title_phi, 120, -3.6, 3.6,  60, 70, 250)
-        hist["phiclust_CSS_separate_%s" % side] = ROOT.TH2F("phiclust_CSS_separate_%s_%s" % (side, ijob), title_phi, 120, -3.6, 3.6,  60, 70, 250)
+        hist["phiclust_CSL_separate_%s" % side] = ROOT.TH2F("phiclust_CSL_separate_%s_%s" % (side, ijob), title_phi, 120, -3.6, 3.6,  19, 60, 250)
+        hist["phiclust_CSS_separate_%s" % side] = ROOT.TH2F("phiclust_CSS_separate_%s_%s" % (side, ijob), title_phi, 120, -3.6, 3.6,  19, 60, 250)
 
-        hist["etaclust_CSL_separate_%s" % side] = ROOT.TH2F("etaclust_CSL_separate_%s_%s" % (side, ijob), title_eta, 120, -3.6, 3.6,  60, 70, 250)
-        hist["etaclust_CSS_separate_%s" % side] = ROOT.TH2F("etaclust_CSS_separate_%s_%s" % (side, ijob), title_eta, 120, -3.6, 3.6,  60, 70, 250)
+        hist["etaclust_CSL_separate_%s" % side] = ROOT.TH2F("etaclust_CSL_separate_%s_%s" % (side, ijob), title_eta, 120, -3.6, 3.6,  19, 60, 250)
+        hist["etaclust_CSS_separate_%s" % side] = ROOT.TH2F("etaclust_CSS_separate_%s_%s" % (side, ijob), title_eta, 120, -3.6, 3.6,  19, 60, 250)
 
     for hi in hist.values():
         hi.Sumw2()
         ROOT.SetOwnership(hi, False)
 
-    events     = tree.GetEntries()
+    events     = 1000 # tree.GetEntries()
     start_time = time.time()
 
     for event in xrange(events):
