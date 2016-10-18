@@ -104,6 +104,8 @@ class MuonRawHistograms {
     TH1F* evts = 0;
 
     TH1F* evts_vs_lumi          = 0;
+    TH1F* evts_vs_acmu          = 0;
+    TH1F* evts_vs_avmu          = 0;
     TH1F* evts_vs_bcid          = 0;
     TH1F* lumi_vs_bcid          = 0;
     TH1F* hits_vs_bcid_mdt_full = 0;
@@ -139,35 +141,12 @@ class MuonRawHistograms {
     TH2F* hits_adc_vs_lumi_vs_evts_csc_CSL1 = 0;
     TH2F* hits_adc_vs_lumi_vs_evts_csc_CSS1 = 0;
 
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_full = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_EIL1 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_EIL2 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_EIS1 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_EIS2 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_EML1 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_EML2 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_EMS1 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_EMS2 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_BIS7 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_mdt_BIS8 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_csc_full = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_csc_CSL1 = 0;
-    TH2F* hits_raw_vs_mu_vs_evts_csc_CSS1 = 0;
-
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_full = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_EIL1 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_EIL2 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_EIS1 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_EIS2 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_EML1 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_EML2 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_EMS1 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_EMS2 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_BIS7 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_mdt_BIS8 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_csc_full = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_csc_CSL1 = 0;
-    TH2F* hits_adc_vs_mu_vs_evts_csc_CSS1 = 0;
+    TH2F* hits_raw_vs_lumi_vs_r_L = 0;
+    TH2F* hits_raw_vs_lumi_vs_r_S = 0;
+    TH2F* hits_raw_vs_acmu_vs_r_L = 0;
+    TH2F* hits_raw_vs_acmu_vs_r_S = 0;
+    TH2F* hits_raw_vs_avmu_vs_r_L = 0;
+    TH2F* hits_raw_vs_avmu_vs_r_S = 0;
 
     TH1F* hits_raw_vs_r_EIL = 0;
     TH1F* hits_raw_vs_r_EIS = 0;
@@ -180,6 +159,9 @@ class MuonRawHistograms {
 
     std::map<std::string, TH1F*> hits_raw_vs_r;
     std::map<std::string, TH1F*> hits_adc_vs_r;
+
+    std::map<std::string, TH1F*> hits_raw_vs_lumi;
+    std::map<std::string, TH1F*> hits_adc_vs_lumi;
 
     TH2F* hits_raw_vs_region_L = 0;
     TH2F* hits_raw_vs_region_S = 0;
